@@ -114,7 +114,7 @@ class ParliamentNetherlands(Parliament, XMLCorpus):
                 if end_year >= start.year and start_year <= end.year:
                     yield xml_file
             else:
-                yield xml_file
+                continue
 
 
     country = field_defaults.country()

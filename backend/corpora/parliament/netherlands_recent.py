@@ -74,7 +74,7 @@ class ParliamentNetherlandsRecent(ParliamentNetherlands, XMLCorpus):
 
     def sources(self, start, end):
         logger = logging.getLogger(__name__)
-        for year in range(start.year, end.year):
+        for year in range(start.year, end.year+1):
             for xml_file in glob('{}/{}/*.xml'.format(self.data_directory, year)):
                 yield xml_file
 
