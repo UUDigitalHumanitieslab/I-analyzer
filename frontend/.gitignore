@@ -35,6 +35,9 @@ testem.log
 /typings
 yarn-error.log
 
+# production environment
+/src/environments/environment.prod.ts
+
 # e2e
 /e2e/*.js
 /e2e/*.map

@@ -1,7 +1,7 @@
 export const environment = {
     production: true,
     appName: 'Something completely different',
-    aboutPage: 'people-parliament.md',
+    aboutPage: 'ianalyzer',
     apiUrl: '/api',
     adminUrl: '/admin',
     wordModelsUrl: '/wordmodels/'
