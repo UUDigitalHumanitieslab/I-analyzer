@@ -6,6 +6,7 @@ class CustomSaml2Backend(Saml2Backend):
     def get_or_create_user(self, *args, **kwargs):
         user, created = super().get_or_create_user(*args, **kwargs)
         user.saml = True
+        user.save()
 
         saml_group = saml_user_group()
         if saml_group:
