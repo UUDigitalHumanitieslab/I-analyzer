@@ -4,20 +4,25 @@ import os
 from addcorpus.models import Corpus
 from addcorpus.permissions import (CorpusAccessPermission,
                                    corpus_name_from_request)
+from api.utils import check_json_keys
 from django.conf import settings
 from django.http.response import FileResponse
 from download import convert_csv, tasks
 from download.models import Download
 from download.serializers import DownloadSerializer
 from es import download as es_download
+from rest_framework.decorators import action
 from rest_framework.exceptions import (APIException, NotFound, ParseError,
                                        PermissionDenied)
+from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
-from api.utils import check_json_keys
+from rest_framework.viewsets import GenericViewSet
 from tag.filter import handle_tags_in_request
+
+from ianalyzer.mixins import DestroyWithPayloadMixin
 
 logger = logging.getLogger()
 
@@ -115,7 +120,7 @@ class FullDataDownloadTaskView(APIView):
             raise APIException('Download failed: server error')
 
 
-class DownloadHistoryViewset(ModelViewSet):
+class DownloadHistoryViewset(GenericViewSet, ListModelMixin,  DestroyWithPayloadMixin):
     '''
     Retrieve list of all the user's downloads
     '''
@@ -125,6 +130,21 @@ class DownloadHistoryViewset(ModelViewSet):
 
     def get_queryset(self):
         return self.request.user.downloads.all()
+
+    @action(detail=False, url_path='delete_all')
+    def delete_all(self, request):
+        # For now, only delete downloads that are done/failed
+        downloads = request.user.downloads.all()
+        to_delete = [d for d in downloads if d.status in ('done', 'error')]
+        n_deletions = 0
+        for download in to_delete:
+            try:
+                download.delete()
+                n_deletions += 1
+            except Exception as e:
+                logger.error(e)
+
+        return Response(f'deleted {n_deletions} download(s)', status=HTTP_200_OK)
 
 
 class FileDownloadView(APIView):

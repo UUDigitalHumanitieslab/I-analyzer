@@ -7,6 +7,12 @@
                 Downloads
             </div>
         </ng-template>
+        <ng-template *ngIf="downloads.length" pTemplate="summary">
+            <button class="button is-primary" type="reset" (click)="deleteAllDownloads()">
+                <span class="icon"><fa-icon [icon]="faTrash"></fa-icon></span>
+                <span>Delete all downloads</span>
+            </button>
+        </ng-template>
         <ng-template pTemplate="header">
             <tr>
                 <th rowspan="2">Timestamp</th>
@@ -17,6 +23,7 @@
                 <th rowspan="2">Field(s)</th>
                 <th rowspan="2">Status</th>
                 <th rowspan="2">Download</th>
+                <th rowspan="2">Delete</th>
             </tr>
             <tr>
                 <th>
@@ -46,6 +53,16 @@
                             <fa-icon [icon]="faDownload"></fa-icon>
                         </span>
                         <span>download file</span>
+                    </a>
+                </td>
+                <td>
+                    <a *ngIf="download.status === 'done' || download.status ==='error'" role="button" tabindex="0"
+                        (click)="deleteDownload(download)"
+                        (keydown.enter)="deleteDownload(download)">
+                        <span class="icon">
+                            <fa-icon [icon]="faTrash"></fa-icon>
+                        </span>
+                        <span>delete download</span>
                     </a>
                 </td>
             </tr>

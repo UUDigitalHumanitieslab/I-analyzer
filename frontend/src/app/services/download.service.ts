@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 
 import { saveAs } from 'file-saver';
+import * as _ from 'lodash';
+import { Observable } from 'rxjs';
+import { Corpus, CorpusField, Download, DownloadOptions, QueryModel } from '../models/index';
 import { ApiService } from './api.service';
 import { ElasticSearchService } from './elastic-search.service';
-import { Corpus, CorpusField, DownloadOptions, QueryModel } from '../models/index';
-import * as _ from 'lodash';
 
 @Injectable()
 export class DownloadService {
@@ -84,6 +85,13 @@ export class DownloadService {
         return this.apiService.csv(parameters);
     }
 
+    public deleteDownload(id: number): Observable<Download> {
+        return this.apiService.deleteDownload(id);
+    }
+
+    public deleteAll(): Observable<string> {
+        return this.apiService.deleteAllDownloads();
+    }
     private getFileNameFromHttpResponse = (httpResponse) => {
         const contentDispositionHeader = httpResponse.headers.get(
             'Content-Disposition'

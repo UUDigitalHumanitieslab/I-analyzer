@@ -1,42 +1,28 @@
-"""ianalyzer URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/3.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.conf.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
+from addcorpus import urls as corpus_urls
+from api import urls as api_urls
+from api.views import QueryViewset
 from django.conf import settings
-from django.urls import path, re_path, include
 from django.contrib import admin
+from django.urls import include, path, re_path
 from django.views.generic import RedirectView
-
+from download import urls as download_urls
+from download.views import DownloadHistoryViewset
+from es import urls as es_urls
+from media import urls as media_urls
 from rest_framework import routers
+from tag import urls as tag_urls
+from tag.views import TagViewSet
+from visualization import urls as visualization_urls
+from wordmodels import urls as wordmodels_urls
 
 from .index import index
 from .proxy_frontend import proxy_frontend
 
-from addcorpus import urls as corpus_urls
-from visualization import urls as visualization_urls
-from download import urls as download_urls
-from wordmodels import urls as wordmodels_urls
-from es import urls as es_urls
-from api.views import QueryViewset
-from api import urls as api_urls
-from media import urls as media_urls
-from tag import urls as tag_urls
-from tag.views import TagViewSet
-
 api_router = routers.DefaultRouter()  # register viewsets with this router
 api_router.register('search_history', QueryViewset, basename='query')
 api_router.register('tag/tags', TagViewSet)
+api_router.register('download/history', DownloadHistoryViewset,
+                    basename='download_history')
 
 if settings.PROXY_FRONTEND:
     spa_url = re_path(r'^(?P<path>.*)$', proxy_frontend)

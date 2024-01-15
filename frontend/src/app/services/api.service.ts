@@ -67,10 +67,6 @@ export class ApiService {
         return this.http.get<QueryDb[]>('/api/search_history/').toPromise();
     }
 
-    public downloads(): Promise<Download[]> {
-        return this.http.get<Download[]>('/api/download/').toPromise();
-    }
-
     // Media
     public getMedia(data: { args: string }): Promise<any> {
         const url = `/api/get_media${data.args}`;
@@ -225,6 +221,18 @@ export class ApiService {
     public downloadTask(data: ResultsDownloadParameters): Promise<TaskResult> {
         const url = this.apiRoute(this.downloadApiURL, 'search_results_task');
         return this.http.post<TaskResult>(url, data).toPromise();
+    }
+
+    public downloads(): Promise<Download[]> {
+        return this.http.get<Download[]>('/api/download/history/').toPromise();
+    }
+
+    public deleteDownload(id: number): Observable<Download> {
+        return this.http.delete<Download>(`/api/download/history/${id}/`);
+    }
+
+    public deleteAllDownloads(): Observable<string> {
+        return this.http.get<string>('/api/download/history/delete_all/');
     }
 
     // Corpus
