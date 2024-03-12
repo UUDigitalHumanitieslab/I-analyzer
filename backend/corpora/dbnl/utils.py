@@ -4,6 +4,7 @@ import os
 from langcodes import standardize_tag, Language
 
 from addcorpus.extract import Pass, Combined, CSV
+from copy import copy
 
 # === METADATA EXTRACTION ===
 
@@ -204,3 +205,28 @@ def language_name(code):
         codes
     ))
     return ', '.join(names)
+
+def get_ref(node):
+    prev = node.find_all_previous('note')
+    return len(prev) + 1
+
+def insert_ref(node):
+    '''
+    Adds a reference, e.g. `[1]` at the start of a node's contents
+    '''
+    ref = get_ref(node)
+    node.insert(0, f'[{ref}] ')
+    return node
+
+def replace_notes_with_ref(node):
+    '''
+    Replaces all `<note>` tags in the a beautiful soup node with a reference, e.g. `[1]`
+    '''
+    new_node = copy(node) # make a copy to avoid altering the original document
+    tags = zip(node.find_all('note', recursive=True), new_node.find_all('note', recursive=True))
+
+    for old_tag, to_replace in tags:
+        ref = get_ref(old_tag)
+        to_replace.replace_with(f'[{ref}]')
+
+    return new_node
