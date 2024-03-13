@@ -102,6 +102,10 @@ def _activate_if_ready(corpus):
     corpus.active = corpus.ready_to_publish()
     corpus.save()
 
+def _deactivate(corpus):
+    corpus.active = False
+    corpus.save()
+
 def _clear_python_definition(corpus):
     '''
     Mark a corpus as one without a python definition deactivate it.
@@ -130,6 +134,7 @@ def _save_or_skip_corpus(corpus_name, corpus_definition, verbose=False, stdout=s
         if verbose:
             print(f'Saved corpus: {corpus_name}',  file=stdout)
     except Exception as e:
+        _deactivate(corpus)
         print(f'Failed saving corpus: {corpus_name}', file=stderr)
         print(f'Error: {e}', file=stderr)
 
