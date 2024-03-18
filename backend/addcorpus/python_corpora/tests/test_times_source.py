@@ -23,8 +23,6 @@ def test_times_source(times_test_settings):
     # initialize the corpora module within the testing context
     times_corpus = load_corpus.load_corpus_definition('times')
 
-    print(dirname(__file__), times_corpus.data_directory)
-
     # Assert that indeed we are drawing sources from the testing folder
     assert dirname(__file__) == abspath(times_corpus.data_directory)
 

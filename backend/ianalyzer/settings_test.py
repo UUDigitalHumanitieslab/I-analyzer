@@ -17,5 +17,5 @@ CORPORA = {
     'tagging-mock-corpus': path_in_testdir('tag', 'tag_mock_corpus.py'),
 }
 
-TIMES_DATA = path_in_testdir('addcorpus', '')
+TIMES_DATA = path_in_testdir('addcorpus', '../python_corpora/tests')
 TIMES_ES_INDEX = 'times-test'
