@@ -47,21 +47,25 @@ def test_saving_broken_corpus(db, mock_corpus):
 
     corpus.refresh_from_db()
     # expect the the corpus to be inactive now
-    assert corpus.active == False
+    assert not corpus.active
+    assert corpus.has_python_definition
 
 def test_remove_corpus_from_settings(db, settings, mock_corpus):
     corpus = Corpus.objects.get(name=mock_corpus)
     assert corpus.active
+    assert corpus.has_python_definition
 
     path = settings.CORPORA.pop(mock_corpus)
     load_and_save_all_corpora()
     corpus.refresh_from_db()
     assert not corpus.active
+    assert not corpus.has_python_definition
 
     settings.CORPORA[mock_corpus] = path
     load_and_save_all_corpora()
     corpus.refresh_from_db()
     assert corpus.active
+    assert corpus.has_python_definition
 
 @pytest.fixture()
 def deactivated_corpus(mock_corpus):
