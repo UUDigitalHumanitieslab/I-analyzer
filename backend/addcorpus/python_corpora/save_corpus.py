@@ -4,16 +4,27 @@ from addcorpus.models import Corpus, CorpusConfiguration, Field
 from addcorpus.python_corpora.load_corpus import load_all_corpus_definitions
 import sys
 
+def _configuration_pk(corpus: Corpus):
+    if corpus.has_configuration:
+        return corpus.configuration.pk
+
 def _save_corpus_configuration(corpus: Corpus, corpus_definition: CorpusDefinition):
     '''
     Save a corpus configuration in the SQL database.
 
     Parameters:
-    - `corpus`: a Corpus database object, which should not have an existing configuration
-    - `corpus_definition`: a corpus object, output of `load_corpus`
+        corpus: a Corpus database object
+        corpus_definition: a corpus object, output of `load_corpus`
+
+    If the corpus already has a CorpusConfiguration, its contents will be overwritten
+    based on the python definitions. If not, a new configuration will be created.
+
+    This function is idempotent: a given corpus definition will always create the same
+    configuration, regardless of what is currently saved in the database.
     '''
 
-    configuration = CorpusConfiguration(corpus=corpus)
+    # create a clean CorpusConfiguration object, but use the existing PK if possible
+    configuration = CorpusConfiguration(pk=_configuration_pk(corpus), corpus=corpus)
     _copy_corpus_attributes(corpus_definition, configuration)
     configuration.save()
     configuration.full_clean()
@@ -63,6 +74,14 @@ def _save_corpus_fields_in_database(corpus_definition: CorpusDefinition, configu
     for field in corpus_definition.fields:
         _save_field_in_database(field, configuration)
 
+    for field in configuration.fields.exclude(name__in=corpus_definition.fieldnames):
+        field.delete()
+
+def _field_pk(name: str, configuration: CorpusConfiguration):
+    if Field.objects.filter(corpus_configuration=configuration, name=name).exists():
+        field = Field.objects.get(corpus_configuration=configuration, name=name)
+        return field.pk
+
 def _save_field_in_database(field_definition: FieldDefinition, configuration: CorpusConfiguration):
     attributes_to_copy = [
         'name', 'display_name', 'display_type',
@@ -80,6 +99,7 @@ def _save_field_in_database(field_definition: FieldDefinition, configuration: Co
     filter_definition = field_definition.search_filter.serialize() if field_definition.search_filter else {}
 
     field = Field(
+        pk=_field_pk(field_definition.name, configuration),
         corpus_configuration=configuration,
         search_filter=filter_definition,
         **copy_attributes,
@@ -128,7 +148,6 @@ def _save_or_skip_corpus(corpus_name, corpus_definition, verbose=False, stdout=s
     try:
         with transaction.atomic():
             _prepare_for_import(corpus)
-            CorpusConfiguration.objects.filter(corpus=corpus).delete()
             _save_corpus_configuration(corpus, corpus_definition)
             _activate_if_ready(corpus)
         if verbose:
@@ -147,7 +166,7 @@ def load_and_save_all_corpora(verbose=False, stdout=sys.stdout, stderr=sys.stder
     corpus_definitions = load_all_corpus_definitions(stderr=stderr)
 
     for corpus_name, corpus_definition in corpus_definitions.items():
-        _save_or_skip_corpus(corpus_name, corpus_definition)
+        _save_or_skip_corpus(corpus_name, corpus_definition, verbose=verbose, stdout=stdout, stderr=stderr)
 
     not_included = Corpus.objects.filter(has_python_definition=True).exclude(name__in=corpus_definitions.keys())
     for corpus in not_included:
