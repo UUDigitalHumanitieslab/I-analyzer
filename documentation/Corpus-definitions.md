@@ -24,7 +24,7 @@ On startup, all configured python classes will be loaded into the database. Duri
 
 Python definitions can be loaded into the database with the `loadcorpora` command in the backend. Normally, this is run when you start the server.
 
-This command will parse any configured python corpora and save a `Corpus` and `CorpusConfiguration` object for them. If the python corpus cannot be loaded, the `Corpus` object will still exist in the database, but it will be missing a `CorpusConfiguration` and will not be usable.
+This command will parse any configured python corpora and save a `Corpus` and `CorpusConfiguration` object for them. If the python corpus cannot be loaded, the `Corpus` object will still exist in the database, it will be inactive.
 
 ### Corpus vs. CorpusConfiguration
 
@@ -44,7 +44,7 @@ If you want to remove a corpus from your environment, remove it from the Django 
 
 Removing a corpus from the settings will not delete the `Corpus` object. It has the following effect:
 
-- The `CorpusConfiguration` object (and its fields) will be removed
+- The properties `corpus.active` and `corpus.has_python_definition` are set to `False`.
 - The methods `corpus.ready_to_index()` and `corpus.read_to_publish()` will return `False`.
 - The corpus will be hidden from the API and interface
 - The python definition will no longer be imported during startup
