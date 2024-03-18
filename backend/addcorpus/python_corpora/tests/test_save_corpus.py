@@ -19,6 +19,7 @@ def test_saved_corpora(db):
         assert Corpus.objects.filter(name=corpus_name).exists()
         corpus = Corpus.objects.get(name=corpus_name)
         assert corpus.has_configuration
+        assert corpus.active
 
     assert len(Corpus.objects.all()) == len(configured)
     assert len(CorpusConfiguration.objects.all()) == len(configured)
@@ -50,7 +51,7 @@ def test_saving_broken_corpus(db, mock_corpus):
 
 def test_remove_corpus_from_settings(db, settings, mock_corpus):
     corpus = Corpus.objects.get(name=mock_corpus)
-    assert corpus.has_configuration
+    assert corpus.active
 
     path = settings.CORPORA.pop(mock_corpus)
     load_and_save_all_corpora()
