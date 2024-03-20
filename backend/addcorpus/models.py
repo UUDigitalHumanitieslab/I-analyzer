@@ -165,7 +165,8 @@ class CorpusConfiguration(models.Model):
         help_text='short description of the corpus',
     )
     document_context = models.JSONField(
-        null=True,
+        blank=True,
+        default=dict,
         help_text='specification of how documents are grouped into collections',
     )
     es_alias = models.SlugField(

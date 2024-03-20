@@ -7,6 +7,7 @@ import { Corpus, CorpusField, DocumentContext, SortDirection, SortState } from '
 import { ApiRetryService } from './api-retry.service';
 import { AuthService } from './auth.service';
 import { findByName } from '../utils/utils';
+import * as _ from 'lodash';
 
 @Injectable({
     providedIn: 'root',
@@ -110,7 +111,7 @@ export class CorpusService {
         },
         allFields: CorpusField[]
     ): DocumentContext {
-        if (!data || !data.context_fields) {
+        if (_.isEmpty(data) || !data.context_fields) {
             return undefined;
         }
 
