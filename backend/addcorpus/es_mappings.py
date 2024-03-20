@@ -87,6 +87,12 @@ def int_mapping():
         'type': 'integer'
     }
 
+def float_mapping():
+    return {
+        'type': 'float'
+    }
+
+
 def bool_mapping():
     return {'type': 'boolean'}
 
