@@ -1,5 +1,4 @@
 from typing import Dict
-from functools import reduce
 
 def get_path(data: Dict, *keys):
     '''
@@ -20,15 +19,3 @@ def get_path(data: Dict, *keys):
         return child
 
     return get_path(child, *keys[1:])
-
-def has_path(object, *keys):
-    '''
-    Checks if a nested series of keys is defined in a JSON
-
-    e.g. `has_path(foo, 'bar', 'baz') returns True if
-    `foo['bar']['baz']` will not raise KeyErrors.
-    '''
-
-    def get_with_fallback(obj, key): return obj.get(key, dict())
-    deepest = reduce(get_with_fallback, keys[:-1], object)
-    return keys[-1] in deepest

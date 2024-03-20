@@ -1,4 +1,4 @@
-from addcorpus.json_corpora.utils import get_path, has_path
+from addcorpus.json_corpora.utils import get_path
 
 def test_get_path():
     data = {'a': 'b'}

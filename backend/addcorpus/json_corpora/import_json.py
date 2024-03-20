@@ -2,7 +2,7 @@ from typing import Dict, Iterable
 from datetime import datetime
 
 from addcorpus.models import Corpus, CorpusConfiguration, Field
-from addcorpus.json_corpora.utils import get_path, has_path
+from addcorpus.json_corpora.utils import get_path
 from addcorpus import es_mappings
 from addcorpus.constants import VisualizationType
 from addcorpus.validation.publishing import _any_date_fields
