@@ -166,9 +166,9 @@ def _parse_url_field(field: Field, field_data: Dict) -> Field:
     return field
 
 def _parse_numeric_field(field: Field, field_data: Dict) -> Field:
-    mapping_type = get_path(field_data, 'type')
+    field.display_type = get_path(field_data, 'type')
 
-    if mapping_type == 'integer':
+    if field.display_type == 'integer':
         field.es_mapping = es_mappings.int_mapping()
     else:
         field.es_mapping = es_mappings.float_mapping()
@@ -181,6 +181,8 @@ def _parse_numeric_field(field: Field, field_data: Dict) -> Field:
             'name': 'RangeFilter',
             'description': f'Select results based on {field.display_name}',
         }
+    else:
+        field.search_filter = {}
 
     visualize = get_path(field_data, 'options', 'visualize')
     if visualize:
@@ -192,6 +194,7 @@ def _parse_numeric_field(field: Field, field_data: Dict) -> Field:
     return field
 
 def _parse_date_field(field: Field, field_data: Dict) -> Field:
+    field.display_type = 'date'
     field.es_mapping = es_mappings.date_mapping()
     field.sortable = get_path(field_data, 'options', 'sort')
     filter_setting = get_path(field_data, 'options', 'filter')
@@ -201,6 +204,8 @@ def _parse_date_field(field: Field, field_data: Dict) -> Field:
             'name': 'DateFilter',
             'description': f'Select results based on {field.display_name}',
         }
+    else:
+        field.search_filter = {}
 
     visualize = get_path(field_data, 'options', 'visualize')
     if visualize:
@@ -211,6 +216,7 @@ def _parse_date_field(field: Field, field_data: Dict) -> Field:
     return field
 
 def _parse_boolean_field(field: Field, field_data: Dict) -> Field:
+    field.display_type = 'boolean'
     field.es_mapping = es_mappings.bool_mapping()
     filter_setting = get_path(field_data, 'options', 'filter')
 
@@ -219,6 +225,8 @@ def _parse_boolean_field(field: Field, field_data: Dict) -> Field:
             'name': 'BooleanFilter',
             'description': f'Select results based on {field.display_name}',
         }
+    else:
+        field.search_filter = {}
 
     visualize = get_path(field_data, 'options', 'visualize')
     if visualize:
@@ -229,7 +237,9 @@ def _parse_boolean_field(field: Field, field_data: Dict) -> Field:
     return field
 
 def _parse_geo_field(field: Field, field_data: Dict) -> Field:
+    field.display_type = 'keyword'
     field.es_mapping = es_mappings.geo_mapping()
+    field.search_filter = {}
     return field
 
 def _include_ngram_visualisation(fields: Iterable[Field]):
