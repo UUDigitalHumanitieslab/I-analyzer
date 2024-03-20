@@ -4,7 +4,7 @@ from datetime import datetime
 from addcorpus.models import Corpus, CorpusConfiguration, Field
 from addcorpus.json_corpora.utils import get_path, has_path
 
-def import_corpus(data: Dict) -> Corpus:
+def import_json_corpus(data: Dict) -> Corpus:
     name = get_path(data, 'name')
 
     corpus = Corpus.objects.get_or_create(name=name)
@@ -12,6 +12,8 @@ def import_corpus(data: Dict) -> Corpus:
     configuration = import_configuration(data)
     configuration.corpus = corpus
     configuration.save()
+
+    return corpus
 
 def import_configuration(data: Dict) -> CorpusConfiguration:
     title = get_path(data, 'meta', 'title')
