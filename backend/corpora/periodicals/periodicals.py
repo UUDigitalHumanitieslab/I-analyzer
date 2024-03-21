@@ -149,7 +149,8 @@ class Periodicals(XMLCorpusDefinition):
             results_overview=True,
             extractor=extract.XML(tag='ocrText', flatten=True),
             search_field_core=True,
-            visualizations=["wordcloud"]
+            visualizations=["wordcloud"],
+            language='en',
         ),
         FieldDefinition(
             name='ocr',

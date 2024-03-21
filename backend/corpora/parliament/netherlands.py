@@ -253,7 +253,7 @@ class ParliamentNetherlands(Parliament, XMLCorpusDefinition):
     )
     topic.language = 'nl'
 
-    speech = field_defaults.speech()
+    speech = field_defaults.speech(language='nl')
     speech.extractor = Choice(
         XML(
             tag='p',
@@ -267,7 +267,6 @@ class ParliamentNetherlands(Parliament, XMLCorpusDefinition):
             flatten=True,
         )
     )
-    speech.language = 'nl'
 
     speech_id = field_defaults.speech_id()
     speech_id.extractor = Choice(

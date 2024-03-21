@@ -320,7 +320,8 @@ class DutchNewspapersPublic(XMLCorpusDefinition):
             search_field_core=True,
             extractor=XML(tag='p', multiple=True,
                                   flatten=True, toplevel=True),
-            visualizations=["wordcloud"]
+            visualizations=["wordcloud"],
+            language='nl',
         ),
     ]
 

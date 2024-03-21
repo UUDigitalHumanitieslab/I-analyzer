@@ -143,13 +143,12 @@ class ParliamentGermanyNew(Parliament, CSVCorpusDefinition):
     )
     speaker_profession.language = 'de'
 
-    speech = field_defaults.speech()
+    speech = field_defaults.speech(language='de')
     speech.extractor = CSV(
         field='speech_content',
         multiple=True,
         transform=lambda x : ' '.join(x)
     )
-    speech.language = 'de'
 
     speech_id = field_defaults.speech_id()
     speech_id.extractor = CSV(

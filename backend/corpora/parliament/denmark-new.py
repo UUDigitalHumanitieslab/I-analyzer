@@ -90,9 +90,8 @@ class ParliamentDenmarkNew(Parliament, CSVCorpusDefinition):
         transform = formatting.extract_year,
     )
 
-    speech = field_defaults.speech()
+    speech = field_defaults.speech(language='da')
     speech.extractor = CSV(field = 'Text')
-    speech.language = 'da'
 
     speech_id = field_defaults.speech_id()
     speech_id.extractor = CSV(field = 'ID')

@@ -175,7 +175,8 @@ class GuardianObserver(XMLCorpusDefinition):
             description='Raw OCR\'ed text (content).',
             results_overview=True,
             search_field_core=True,
-            extractor=extract.XML(tag='FullText', toplevel=True, flatten=True)
+            extractor=extract.XML(tag='FullText', toplevel=True, flatten=True),
+            language='en',
         )
     ]
 

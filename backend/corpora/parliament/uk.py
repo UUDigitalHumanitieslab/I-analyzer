@@ -79,13 +79,12 @@ class ParliamentUK(Parliament, CSVCorpusDefinition):
         field='debate_id'
     )
 
-    speech = field_defaults.speech()
+    speech = field_defaults.speech(language='en')
     speech.extractor = CSV(
         field='content',
         multiple=True,
         transform=lambda x : ' '.join(x)
     )
-    speech.language = 'en'
 
     speech_id = field_defaults.speech_id()
     speech_id.extractor = CSV(

@@ -167,7 +167,7 @@ class ParliamentNorwayNew(Parliament, CSVCorpusDefinition):
         transform = lambda date: formatting.extract_year(date, pattern = r'\d{2}\.\d{2}\.(\d{4})')
     )
 
-    speech = field_defaults.speech()
+    speech = field_defaults.speech(language='no')
     speech.extractor = CSV(field='text')
 
     speech_id = field_defaults.speech_id()

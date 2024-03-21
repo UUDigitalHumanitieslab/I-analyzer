@@ -435,7 +435,8 @@ class Times(XMLCorpusDefinition):
             extractor=extract.XML(
                 tag=['text', 'text.cr'], multiple=True,
                 flatten=True
-            )
+            ),
+            language='en',
         ),
     ]
 

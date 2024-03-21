@@ -89,7 +89,7 @@ class ParliamentCanada(Parliament, CSVCorpusDefinition):
         field='speaker_constituency'
     )
 
-    speech = field_defaults.speech()
+    speech = field_defaults.speech(language='en')
     speech.extractor = CSV(
         field='content',
         multiple=True,

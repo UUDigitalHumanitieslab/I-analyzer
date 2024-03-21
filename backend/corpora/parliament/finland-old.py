@@ -67,7 +67,7 @@ class ParliamentFinlandOld(Parliament, CSVCorpusDefinition):
     source_archive = field_defaults.source_archive()
     source_archive.extractor = CSV(field='file')
 
-    speech = field_defaults.speech()
+    speech = field_defaults.speech(language='fin')
     speech.extractor = CSV(field='text')
 
     speech_id = field_defaults.speech_id()

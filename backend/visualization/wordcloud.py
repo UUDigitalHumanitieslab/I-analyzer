@@ -1,19 +1,17 @@
 from collections import Counter
 from sklearn.feature_extraction.text import CountVectorizer
 
-from addcorpus.python_corpora.load_corpus import load_corpus_definition
-from addcorpus.es_settings import get_stopwords_from_settings
+from addcorpus.models import Corpus
+from addcorpus.es_settings import get_nltk_stopwords
 from es import download as download
 
-def field_stopwords(corpus_name, field):
-    corpus = load_corpus_definition(corpus_name)
-    field_definition = next((f for f in corpus.fields if f.name == field), None)
-    mapping = field_definition.es_mapping
-    analyzer = mapping.get(
-        'fields', {}).get('clean', {}).get('analyzer')
-    if not analyzer:
+def field_stopwords(corpus_name, field_name):
+    corpus = Corpus.objects.get(name=corpus_name)
+    field = corpus.configuration.fields.get(name=field_name)
+    if field.language and field.language is not 'dynamic':
+        return get_nltk_stopwords(field.language)
+    else:
         return []
-    return get_stopwords_from_settings(corpus.es_settings, analyzer)
 
 def make_wordcloud_data(documents, field, corpus):
     texts = []

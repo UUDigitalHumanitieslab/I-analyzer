@@ -45,7 +45,8 @@ class SmallMockCorpus(CSVCorpusDefinition):
         name = 'content',
         display_type='text_content',
         es_mapping = main_content_mapping(True, True, False, 'en'),
-        extractor = CSV('content')
+        extractor = CSV('content'),
+        language='en',
     )
 
     genre = FieldDefinition(

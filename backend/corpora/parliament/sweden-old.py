@@ -89,9 +89,8 @@ class ParliamentSwedenOld(Parliament, CSVCorpusDefinition):
     date_latest.search_filter.lower = min_date
     date_latest.search_filter.upper = max_date
 
-    speech = field_defaults.speech()
+    speech = field_defaults.speech(language='sv')
     speech.extractor = CSV(field='text')
-    speech.language = 'sv'
 
     page = field_defaults.page()
     page.extractor = CSV(field='page_number')

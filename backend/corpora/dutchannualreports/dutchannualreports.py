@@ -193,7 +193,8 @@ class DutchAnnualReports(XMLCorpusDefinition):
                 multiple=True,
                 transform=lambda x: ' '.join(x),
             ),
-            search_field_core=True
+            search_field_core=True,
+            language='nl',
         ),
         FieldDefinition(
             name='file_path',
