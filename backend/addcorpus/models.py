@@ -39,6 +39,11 @@ class Corpus(models.Model):
         default=False,
         help_text='an inactive corpus is hidden from the search interface',
     )
+    has_python_definition = models.BooleanField(
+        default=False,
+        help_text='whether the configuration of this corpus is determined by a Python '
+            'module (some features are only available for Python-based corpora)',
+    )
 
     @property
     def has_configuration(self):

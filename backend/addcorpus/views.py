@@ -20,7 +20,7 @@ class CorpusView(APIView):
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
-        corpora = Corpus.objects.filter(configuration__isnull=False)
+        corpora = Corpus.objects.filter(active=True)
         filtered_corpora = filter_user_corpora(corpora, request.user)
         serializer = CorpusSerializer(filtered_corpora, many=True)
         return Response(serializer.data)
