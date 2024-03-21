@@ -1,0 +1,52 @@
+{
+    "name": "example",
+    "meta": {
+        "title": "Example",
+        "description": "Example corpus",
+        "languages": ["en"],
+        "category": "book",
+        "date_range": {
+            "min": "1500-01-01",
+            "max": "1700-12-31"
+        }
+    },
+    "source_data": {
+        "type": "csv"
+    },
+    "fields": [
+        {
+            "name": "character",
+            "display_name": "Character",
+            "description": "Character speaking the line",
+            "type": "text_metadata",
+            "options": {
+                "search": false,
+                "filter": "show",
+                "preview": true,
+                "visualize": true,
+                "sort": false,
+                "hidden": false
+            },
+            "extract": {
+                "column": "character"
+            }
+        }, {
+            "name": "line",
+            "display_name": "Line",
+            "description": "Line spoken by the character",
+            "type": "text_content",
+            "options": {
+                "search": true,
+                "filter": "none",
+                "preview": true,
+                "visualize": true,
+                "sort": false,
+                "hidden": false
+            },
+            "extract": {
+                "column": "line"
+            }
+        }
+    ],
+    "options": {}
+}
