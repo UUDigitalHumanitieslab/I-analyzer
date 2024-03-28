@@ -58,7 +58,7 @@ describe('es-query utils', () => {
     });
 
     it('should create an API query for paged results', () => {
-        const queryModel = new QueryModel(mockCorpus);
+        const queryModel = new QueryModel(mockCorpus, true);
         const tagFilter = queryModel.filters.find(isTagFilter);
         tagFilter.set([1]);
         queryModel.setQueryText('test');

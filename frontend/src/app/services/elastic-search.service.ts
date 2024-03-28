@@ -11,12 +11,22 @@ import { TagService } from './tag.service';
 import { APIQuery } from '../models/search-requests';
 import { PageResultsParameters } from '../models/page-results';
 import { resultsParamsToAPIQuery } from '../utils/es-query';
+import { AuthService } from './auth.service';
 
 
 @Injectable()
 export class ElasticSearchService {
+    isAuthenticated: boolean;
 
-    constructor(private http: HttpClient, private tagService: TagService) {
+    constructor(private authService: AuthService, private http: HttpClient, private tagService: TagService) {
+        this.authService.currentUser$.subscribe({
+            next: (user) => {
+                this.isAuthenticated = user !== null;
+                if (this.isAuthenticated) {
+                    this.tagService.fetch();
+                }
+        }
+        });
     }
 
     getDocumentById(id: string, corpus: Corpus): Promise<FoundDocument> {
@@ -130,7 +140,7 @@ export class ElasticSearchService {
     private parseResponse(corpus: Corpus, response: SearchResponse): SearchResults {
         const hits = response.hits.hits;
         return {
-            documents: hits.map(hit => this.hitToDocument(corpus, hit, response.hits.max_score)),
+            documents: hits.map(hit => this.hitToDocument(corpus, hit, response.hits.max_score, this.isAuthenticated)),
             total: response.hits.total
         };
     }
@@ -144,8 +154,11 @@ export class ElasticSearchService {
     /**
      * return the id, relevance and field values of a given document
      */
-    private hitToDocument(corpus: Corpus, hit: SearchHit, maxScore: number): FoundDocument {
-        return new FoundDocument(this.tagService, corpus, hit, maxScore);
+    private hitToDocument(corpus: Corpus, hit: SearchHit, maxScore: number, generateTags: boolean): FoundDocument {
+        if (generateTags) {
+            return new FoundDocument(corpus, hit, maxScore, this.tagService);
+        }
+        return new FoundDocument(corpus, hit, maxScore);
     }
 
 }

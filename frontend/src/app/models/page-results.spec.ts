@@ -24,7 +24,7 @@ describe('PageResults', () => {
     beforeEach(inject([SearchService], (searchService: SearchService) => {
         store = new SimpleStore();
         service = searchService;
-        queryModel = new QueryModel(mockCorpus, store);
+        queryModel = new QueryModel(mockCorpus, true, store);
         service = searchService;
         results = new PageResults(store, searchService, queryModel);
     }));
@@ -38,7 +38,7 @@ describe('PageResults', () => {
             query: 'test',
             highlight: '200',
         });
-        queryModel = new QueryModel(mockCorpus, store);
+        queryModel = new QueryModel(mockCorpus, true, store);
         results = new PageResults(store, service, queryModel);
         expect(results.state$.value.highlight).toBe(200);
     });

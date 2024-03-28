@@ -45,7 +45,7 @@ describe('FoundDocument', () => {
     });
 
     it('should construct from an elasticsearch response', () => {
-        const document = new FoundDocument(tagService, mockCorpus, mockResponse, maxScore);
+        const document = new FoundDocument(mockCorpus, mockResponse, maxScore, tagService);
 
         expect(document.id).toBe('1994_troonrede');
         expect(document.fieldValues['monarch']).toBe('Beatrix');

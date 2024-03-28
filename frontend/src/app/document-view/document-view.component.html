@@ -9,8 +9,8 @@
                             <ia-search-relevance [value]="document.relevance"></ia-search-relevance>
                         </td>
                     </tr>
-                    <tr>
-                        <th>Your tags</th>
+                    <tr *ngIf="document.tags$">
+                        <th id="document-tags">Your tags</th>
                         <td>
                             <ia-document-tags [document]="document"></ia-document-tags>
                         </td>

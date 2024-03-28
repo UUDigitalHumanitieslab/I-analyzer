@@ -1,7 +1,7 @@
 import { Params } from '@angular/router';
 import * as _ from 'lodash';
 import { Observable } from 'rxjs';
-import { Corpus, CorpusField, EsFilter, FilterInterface, } from '../models/index';
+import { Corpus, CorpusField, EsFilter, FilterInterface, User, } from '../models/index';
 import { EsQuery } from '../models';
 import { combineSearchClauseAndFilters,  } from '../utils/es-query';
 import {
@@ -86,14 +86,16 @@ interface QueryState {
 export class QueryModel extends StoreSync<QueryState> {
     corpus: Corpus;
     filters: FilterInterface[];
+    isAuthenticated: boolean;
 
     update: Observable<void>;
 
     protected keysInStore = ['query', 'fields'];
 
-    constructor(corpus: Corpus, store?: Store) {
+    constructor(corpus: Corpus, isAuthenticated?: boolean, store?: Store) {
         super(store || new SimpleStore());
 		this.corpus = corpus;
+        this.isAuthenticated = isAuthenticated;
         this.connectToStore();
         this.filters = this.makeFilters(this.store);
         this.update = this.collectUpdates$();
@@ -150,7 +152,7 @@ export class QueryModel extends StoreSync<QueryState> {
     clone(store?: Store) {
         store = store || new SimpleStore();
         store.paramUpdates$.next(this.toQueryParams());
-        return new QueryModel(this.corpus, store);
+        return new QueryModel(this.corpus, this.filters.find(isTagFilter) !== undefined, store);
 	}
 
     /**
@@ -178,7 +180,10 @@ export class QueryModel extends StoreSync<QueryState> {
 
     toAPIQuery(): APIQuery {
         const esQuery = this.toEsQuery();
-        const tags = makeTagSpecification(this.filters);
+        let tags = {};
+        if (this.filters.find(isTagFilter)) {
+            tags = makeTagSpecification(this.filters);
+        }
         return {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             es_query: esQuery,
@@ -202,10 +207,18 @@ export class QueryModel extends StoreSync<QueryState> {
         return { queryText, searchFields };
     }
 
+    /**
+     * @param store: Store
+     * @returns fieldFilters: FilterInterface[]
+     * if user is logged in, these include a TagFilter
+     */
     private makeFilters(store: Store): FilterInterface[] {
         const fieldFilters: FilterInterface[] = this.corpus.fields.map(field => field.makeSearchFilter(store));
-        const tagFilter = new TagFilter(store);
+        if (this.isAuthenticated) {
+            const tagFilter = new TagFilter(store);
         return [...fieldFilters, tagFilter];
+        }
+        return fieldFilters;
     }
 
     private setFilter(newFilter: FilterInterface): void {

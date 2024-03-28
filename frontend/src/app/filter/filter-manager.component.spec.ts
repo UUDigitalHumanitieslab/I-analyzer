@@ -22,7 +22,7 @@ describe('FilterManagerComponent', () => {
         beforeEach(() => {
             fixture = TestBed.createComponent(FilterManagerComponent);
             component = fixture.componentInstance;
-            component.queryModel = new QueryModel(mockCorpus);
+            component.queryModel = new QueryModel(mockCorpus, true);
             fixture.detectChanges();
         });
 
@@ -32,11 +32,11 @@ describe('FilterManagerComponent', () => {
         });
 
         it('resets filters when corpus changes', () => {
-            component.queryModel = new QueryModel(mockCorpus2);
+            component.queryModel = new QueryModel(mockCorpus2, true);
             fixture.detectChanges();
             expect(component.filters.length).toEqual(2);
             expect(component.filters[0]['adHoc']).toBeTrue();
-            component.queryModel = new QueryModel(mockCorpus);
+            component.queryModel = new QueryModel(mockCorpus, true);
             fixture.detectChanges();
             expect(component.filters.length).toEqual(3);
             expect(component.filters[0]['adHoc']).toBeFalse();
@@ -54,7 +54,7 @@ describe('FilterManagerComponent', () => {
         });
 
         it('shows tag filter', async () => {
-            component.queryModel = new QueryModel(mockCorpus);
+            component.queryModel = new QueryModel(mockCorpus, true);
             await fixture.whenStable();
             const compiled = fixture.debugElement;
             const tagFilter = compiled.query(By.css('ia-tag-filter'));
@@ -71,12 +71,11 @@ describe('FilterManagerComponent', () => {
             fixture.detectChanges();
         });
 
-        xit('does not show tag filter', async () => {
-            // TO DO
+        it('does not show tag filter', async () => {
             await fixture.whenStable();
             const compiled = fixture.debugElement;
             const tagFilter = compiled.query(By.css('ia-tag-filter'));
-            expect(tagFilter).not.toBeTruthy();
+            expect(tagFilter).toBeFalsy();
         });
     });
 

@@ -11,11 +11,15 @@ export const makeDocument = (
     corpus: Corpus = mockCorpus,
     id: string = '0',
     relevance: number = 1,
+    createTags: boolean = true,
     highlight: HighlightResult = undefined
 ): FoundDocument => {
     const hit: SearchHit = {
         _id: id, _score: relevance, _source: fieldValues, highlight
     };
-    return new FoundDocument(tagService, corpus, hit);
+    if (createTags) {
+        return new FoundDocument(corpus, hit, 1, tagService);
+    }
+    return new FoundDocument(corpus, hit, 1);
 };
 

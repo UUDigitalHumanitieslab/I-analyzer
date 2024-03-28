@@ -48,4 +48,21 @@ describe('DocumentViewComponent', () => {
         expect(debug[0].attributes['id']).toBe('tab-speech');
         expect(debug[1].attributes['id']).toBe('tab-scan');
     });
+
+    it('should show document tags interface if document.tags$ is defined', () => {
+        const element = fixture.debugElement.query(By.css('#document-tags'));
+        expect(element).toBeTruthy();
+    });
+
+    it('should not show document tags interface if document.tags$ is not defined', () => {
+        component.document = makeDocument(
+            { great_field: 'Hello world!' },
+            mockCorpus,
+            'identifier',
+            1,
+            false );
+        fixture.detectChanges();
+        const element = fixture.debugElement.query(By.css('#document-tags'));
+        expect(element).not.toBeTruthy();
+    });
 });

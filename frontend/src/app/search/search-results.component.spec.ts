@@ -26,7 +26,7 @@ const documents: FoundDocument[] = [
             a: '1',
             b: '2',
             c: 'Hide-and-seek!'
-        }, mockCorpus, '1', 1,
+        }, mockCorpus, '1', 1, true,
         {
             c: ['Where is <span>Wally?</span>', 'I cannot find <span>Wally</span> anywhere!']
         }

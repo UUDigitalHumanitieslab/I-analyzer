@@ -30,24 +30,25 @@ export class FoundDocument {
     private tagsChanged$ = new Subject<void>();
 
     constructor(
-        private tagService: TagService,
         public corpus: Corpus,
         hit: SearchHit,
-        maxScore: number = 1
+        maxScore: number = 1,
+        private tagService?: TagService
     ) {
         this.id = hit._id;
         this.relevance = hit._score / maxScore;
         this.fieldValues = Object.assign({ id: hit._id }, hit._source);
         this.highlight = hit.highlight;
 
-        const created$ = timer(); // observable of the moment of construction (i.e. now)
-
         // tags need to refreshed when the document is created, and
         // after each update
-        this.tags$ = merge(created$, this.tagsChanged$).pipe(
-            mergeMap(() => this.fetchTags()),
-            shareReplay(1),
-        );
+        if (this.tagService) {
+            const created$ = timer(); // observable of the moment of construction (i.e. now)
+            this.tags$ = merge(created$, this.tagsChanged$).pipe(
+                mergeMap(() => this.fetchTags()),
+                shareReplay(1),
+            );
+        }
     }
 
     /**

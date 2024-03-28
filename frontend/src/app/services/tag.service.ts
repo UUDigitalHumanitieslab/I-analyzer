@@ -12,9 +12,7 @@ export class TagService {
     /** all tags from the user */
     tags$ = new BehaviorSubject<Tag[]>(undefined);
 
-    constructor(private apiService: ApiService) {
-        this.fetch();
-    }
+    constructor(private apiService: ApiService) {}
 
     makeTag(name: string, description?: string): Observable<Tag> {
         return this.apiService

@@ -42,7 +42,6 @@ export class SearchServiceMock {
 
     loadResults(queryModel: QueryModel, resultsParams: PageResultsParameters): Promise<SearchResults> {
         const doc = new FoundDocument(
-            new TagServiceMock() as unknown as TagService,
             mockCorpus,
             {
                 _id: 'test_1',
@@ -52,7 +51,8 @@ export class SearchServiceMock {
                     speech: 'This is a document!'
                 },
             },
-            1.0
+            1.0,
+            new TagServiceMock() as unknown as TagService,
         );
         return Promise.resolve({
             documents: [doc],

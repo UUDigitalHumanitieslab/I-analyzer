@@ -1,8 +1,10 @@
+import * as _ from 'lodash';
+
 import { mockField2, mockFieldDate, mockFieldMultipleChoice } from '../../mock-data/corpus';
 import { Corpus, } from './corpus';
 import { QueryModel } from './query';
 import { SearchFilter } from './field-filter';
-import * as _ from 'lodash';
+import { isTagFilter } from './tag-filter';
 import { Store } from '../store/types';
 import { SimpleStore } from '../store/simple-store';
 
@@ -38,7 +40,7 @@ describe('QueryModel', () => {
 
     beforeEach(() => {
         store = new SimpleStore();
-        query = new QueryModel(corpus, store);
+        query = new QueryModel(corpus, true, store);
 
         filter = query.filterForField(mockFieldDate);
         filter2 = query.filterForField(mockFieldMultipleChoice);
@@ -153,7 +155,7 @@ describe('QueryModel', () => {
             date: '1850-01-01:1850-01-01',
         });
 
-        const newQuery = new QueryModel(corpus, store);
+        const newQuery = new QueryModel(corpus, true, store);
         expect(newQuery.queryText).toEqual('test');
         expect(newQuery.activeFilters.length).toBe(1);
     });
@@ -177,5 +179,14 @@ describe('QueryModel', () => {
         filter.setToValue(new Date('Jan 2 1850'));
         expect(query.filterForField(mockFieldDate).currentData.min).toEqual(new Date('Jan 2 1850'));
         expect(clone.filterForField(mockFieldDate).currentData.min).toEqual(new Date('Jan 1 1850'));
+    });
+
+    it('should create a tag filter for authenticated user', () => {
+        expect(query.filters.find(f => isTagFilter(f))).toBeTruthy();
+    });
+
+    it('should not create a tag filter for unauthenticated user', () => {
+        const newQuery = new QueryModel(corpus, false, store);
+        expect(newQuery.filters.find(f => isTagFilter(f))).toBeFalsy();
     });
 });
