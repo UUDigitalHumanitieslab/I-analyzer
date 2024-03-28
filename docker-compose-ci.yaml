@@ -1,0 +1,65 @@
+services:
+  db:
+    image: docker.io/library/postgres
+    environment:
+      - POSTGRES_DB=ianalyzer-test
+      - POSTGRES_USER=ianalyzer-test
+      - POSTGRES_PASSWORD=ianalyzer-test
+      - PGHOST=db
+      - PGPORT=5432
+      - PGUSER=ianalyzer-test
+      - PGDATABASE=ianalyzer-test
+      - PGPASSWORD=ianalyzer-test
+  backend:
+    build:
+      context: ./backend
+    depends_on:
+      - db
+      - elasticsearch
+    environment:
+      SQL_DATABASE: ianalyzer-test
+      SQL_USER: ianalyzer-test
+      SQL_PASSWORD: ianalyzer-test
+      SQL_HOST: db
+      SQL_PORT: 5432
+      ES_HOST: elasticsearch
+    ports:
+      - 127.0.0.1:8000:8000
+    volumes:
+      - type: bind
+        source: ./backend
+        target: /backend
+    command: bash -c "python manage.py migrate && python manage.py loadcorpora"
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - 127.0.0.1:4200:4200
+    volumes:
+      - type: bind
+        source: ./frontend/src
+        target: /frontend/src
+      - type: bind
+        source: ./frontend/build
+        target: /frontend/build
+    command: sh -c "yarn prebuild"
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.2
+    environment:
+      - node.name=ianalyzer-node
+      - discovery.type=single-node
+      - cluster.name=ianalizer-es-data-cluster
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=false
+      - logger.org.elasticsearch.discovery=ERROR
+      - logger.org.elasticsearch.transport=ERROR
+      - logger.org.elasticsearch.http=ERROR
+      - logger.org.elasticsearch.cluster=ERROR
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - ELASTIC_PASSWORD=somepassword
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - 127.0.0.1:9200:9200

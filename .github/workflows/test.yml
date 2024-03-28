@@ -21,12 +21,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - name: Build backend
+      uses: docker/bake-action@v4
+      with:
+        load: true
+        files: docker-compose-ci.yaml
+        set: |
+          backend.cache-from=type=gha
+          backend.cache-to=type=gha
     - name: Run backend tests
-      run: sudo mkdir -p /ci-data && sudo docker-compose --env-file .env-ci run backend pytest
+      run: sudo docker-compose -f docker-compose-ci.yaml run --rm backend pytest
   frontend-test:
     name: Test Frontend
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - uses: docker/setup-buildx-action@v3
+    - name: Build frontend
+      uses: docker/bake-action@v4
+      with:
+        load: true
+        files: docker-compose-ci.yaml
+        set: |
+              frontend.cache-from=type=gha
+              frontend.cache-to=type=gha
     - name: Run frontend tests
-      run: sudo docker-compose --env-file .env-ci run frontend yarn test
+      run: sudo docker-compose -f docker-compose-ci.yaml run --rm frontend yarn test
