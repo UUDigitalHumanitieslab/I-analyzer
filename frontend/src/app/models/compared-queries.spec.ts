@@ -37,7 +37,7 @@ describe('ComparedQueries', () => {
         expect(compared.state$.value).toEqual({ queries: [] });
     });
 
-    fit('should have all queries as an observable', () => {
+    it('should have all queries as an observable', () => {
         let latestValue: string[];
         compared.allQueries$.subscribe(value => latestValue = value);
 
@@ -51,5 +51,35 @@ describe('ComparedQueries', () => {
 
         compared.setParams({queries: ['test2']});
         expect(latestValue).toEqual(['test', 'test2']);
+    });
+
+    it('it should initialise from parameters', () => {
+        store = new SimpleStore();
+        store.paramUpdates$.next({
+            query: 'test',
+            compareTerms: 'test2,test3,test4'
+        });
+
+        query = new QueryModel(mockCorpus, store);
+        compared = new ComparedQueries(store, query);
+
+        expect(query.state$.value.queryText).toEqual('test');
+        expect(compared.state$.value).toEqual({queries: ['test2', 'test3', 'test4']});
+
+    });
+
+    it('should set from parameters', () => {
+        store.paramUpdates$.next({
+            compareTerms: 'test,test2'
+        });
+        expect(compared.state$.value).toEqual({queries: ['test', 'test2']});
+
+
+        store.paramUpdates$.next({
+            query: 'different test',
+        });
+        // compared queries are reset when query text changes
+        expect(query.state$.value.queryText).toEqual('different test');
+        expect(compared.state$.value).toEqual({queries: []});
     });
 });
