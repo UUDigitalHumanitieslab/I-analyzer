@@ -18,7 +18,7 @@ export class SimpleStore implements Store {
         this.paramUpdates$.pipe(
             scan(mergeParams),
             map(omitNullParameters),
-            map(obj => _.mapValues(obj, _.toString))
+            map(obj => _.mapValues(obj, _.toString)),
         ).subscribe(params =>
             this.params$.next(params)
         );

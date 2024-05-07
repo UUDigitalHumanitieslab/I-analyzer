@@ -2,12 +2,13 @@ import { Params } from '@angular/router';
 import { StoreSync } from '../store/store-sync';
 import * as _ from 'lodash';
 import { Store } from '../store/types';
-import { QueryModel } from './query';
-import { map, takeUntil } from 'rxjs/operators';
-import { Observable, combineLatest } from 'rxjs';
+import { Observable } from 'rxjs';
+import { queryFromParams, queryToParams } from '../utils/params';
+import { map } from 'rxjs/operators';
 
 interface CompareQueryState {
-    queries: string[];
+    primary: string|undefined;
+    compare: string[];
 }
 
 const COMPARE_TERMS_KEY = 'compareTerms';
@@ -17,51 +18,43 @@ export class ComparedQueries extends StoreSync<CompareQueryState> {
     /** all queries, including the primary query text */
     allQueries$: Observable<string[]>;
 
-    protected keysInStore = [COMPARE_TERMS_KEY];
+    protected keysInStore = ['query', COMPARE_TERMS_KEY];
 
-    constructor(store: Store, private query: QueryModel) {
+    constructor(store: Store) {
         super(store);
         this.connectToStore();
 
-        this.query.update.pipe(
-            takeUntil(this.complete$),
-            map(this.assignOnQueryUpdate),
-        ).subscribe((params: Partial<CompareQueryState>) =>
-            this.setParams(params)
-        );
-
-        this.allQueries$ = combineLatest([this.query.state$, this.state$]).pipe(
-            map(([queryState, ownState]) => [queryState.queryText, ...ownState.queries])
+        this.allQueries$ = this.state$.pipe(
+            map(state => [state.primary, ...state.compare])
         );
     }
 
     reset() {
-        this.setParams({ queries: [] });
+        this.setParams({ compare: [] });
     }
 
     protected storeToState(params: Params): CompareQueryState {
-        const value = _.get(params, COMPARE_TERMS_KEY, '');
-        if (!_.isEmpty(value)) {
-            return { queries: value.split(DELIMITER) };
+        const primary = queryFromParams(params);
+
+        let compare: string[];
+        if (_.get(params, COMPARE_TERMS_KEY)) {
+            compare = _.get(params, COMPARE_TERMS_KEY).split(DELIMITER);
         } else {
-            return { queries: [] };
+            compare = [];
         }
+        compare = _.without(compare, primary);
+        return { primary, compare };
     }
 
     protected stateToStore(state: CompareQueryState): Params {
-        if (!_.isEmpty(state.queries)) {
-            const value = state.queries.join(DELIMITER);
-            return { [COMPARE_TERMS_KEY]: value };
+        const query = queryToParams(state.primary);
+        let compareTerms: string;
+        if (!_.isEmpty(state.compare)) {
+            compareTerms = state.compare.map(encodeURIComponent).join(DELIMITER);
         } else {
-            return { [COMPARE_TERMS_KEY]: null };
+            compareTerms = null;
         }
+        return {...query, [COMPARE_TERMS_KEY]: compareTerms};
     }
 
-    private assignOnQueryUpdate(distinct: string[]): Partial<CompareQueryState> {
-        if (distinct.includes('query')) {
-            return { queries: [] };
-        } else {
-            return {};
-        }
-    }
 }

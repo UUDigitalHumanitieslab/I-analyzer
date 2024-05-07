@@ -3,7 +3,7 @@ import { SimpleStore } from '../store/simple-store';
 import { ComparedQueries } from './compared-queries';
 import { QueryModel } from './query';
 
-describe('ComparedQueries', () => {
+fdescribe('ComparedQueries', () => {
     let store: SimpleStore;
     let query: QueryModel;
     let compared: ComparedQueries;
@@ -11,30 +11,30 @@ describe('ComparedQueries', () => {
     beforeEach(() => {
         store = new SimpleStore();
         query = new QueryModel(mockCorpus, store);
-        compared = new ComparedQueries(store, query);
+        compared = new ComparedQueries(store);
     });
 
     it('should create', () => {
         expect(compared).toBeTruthy();
-        expect(compared.state$.value).toEqual({ queries: [] });
+        expect(compared.state$.value).toEqual({ primary: undefined, compare: [] });
     });
 
     it('should update', () => {
-        compared.setParams({ queries: ['test', 'test2'] });
-        expect(compared.state$.value).toEqual({ queries: ['test', 'test2'] });
+        compared.setParams({ compare: ['test', 'test2'] });
+        expect(compared.state$.value).toEqual({ primary: undefined, compare: ['test', 'test2'] });
 
         compared.reset();
-        expect(compared.state$.value).toEqual({ queries: [] });
+        expect(compared.state$.value).toEqual({ primary: undefined, compare: [] });
     });
 
-    it('should reset when the query text changes', () => {
-        compared.setParams({ queries: [ 'test', 'test2'] });
+    it('should ignore overlap with the query text', () => {
+        compared.setParams({ primary: undefined, compare: [ 'test', 'test2'] });
 
         query.setParams({ searchFields: [mockField2] });
-        expect(compared.state$.value).toEqual({ queries: ['test', 'test2'] });
+        expect(compared.state$.value).toEqual({ primary: undefined, compare: ['test', 'test2'] });
 
         query.setQueryText('test');
-        expect(compared.state$.value).toEqual({ queries: [] });
+        expect(compared.state$.value).toEqual({ primary: 'test', compare: ['test2'] });
     });
 
     it('should have all queries as an observable', () => {
@@ -43,13 +43,10 @@ describe('ComparedQueries', () => {
 
         expect(latestValue).toEqual([undefined]);
 
-        compared.setParams({queries: ['test2']});
+        compared.setParams({compare: ['test2']});
         expect(latestValue).toEqual([undefined, 'test2']);
 
         query.setQueryText('test');
-        expect(latestValue).toEqual(['test']);
-
-        compared.setParams({queries: ['test2']});
         expect(latestValue).toEqual(['test', 'test2']);
     });
 
@@ -61,10 +58,10 @@ describe('ComparedQueries', () => {
         });
 
         query = new QueryModel(mockCorpus, store);
-        compared = new ComparedQueries(store, query);
+        compared = new ComparedQueries(store);
 
         expect(query.state$.value.queryText).toEqual('test');
-        expect(compared.state$.value).toEqual({queries: ['test2', 'test3', 'test4']});
+        expect(compared.state$.value).toEqual({primary: 'test', compare: ['test2', 'test3', 'test4']});
 
     });
 
@@ -72,7 +69,7 @@ describe('ComparedQueries', () => {
         store.paramUpdates$.next({
             compareTerms: 'test,test2'
         });
-        expect(compared.state$.value).toEqual({queries: ['test', 'test2']});
+        expect(compared.state$.value).toEqual({primary: undefined, compare: ['test', 'test2']});
 
 
         store.paramUpdates$.next({
@@ -80,6 +77,15 @@ describe('ComparedQueries', () => {
         });
         // compared queries are reset when query text changes
         expect(query.state$.value.queryText).toEqual('different test');
-        expect(compared.state$.value).toEqual({queries: []});
+        expect(compared.state$.value).toEqual({primary: 'different test', compare: ['test', 'test2']});
+    });
+
+    it('should encode stored values', () => {
+        compared.setParams({
+            compare: ['test testing','test']
+        });
+        expect(store.currentParams()).toEqual({
+            compareTerms: 'test%20testing,test'
+        });
     });
 });

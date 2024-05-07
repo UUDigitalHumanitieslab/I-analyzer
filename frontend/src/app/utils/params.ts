@@ -25,6 +25,10 @@ export const mergeAllParams = (values: Params[]): Params =>
 export const queryFromParams = (params: Params): string =>
     params['query'];
 
+export const queryToParams = (queryText: string): Params => ({
+     query: queryText || null
+});
+
 export const searchFieldsFromParams = (params: Params, corpus: Corpus): CorpusField[] => {
     if (params['fields']) {
         const fieldNames = params['fields'].split(',');
