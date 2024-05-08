@@ -61,6 +61,10 @@ export class ComparedQueries extends StoreSync<CompareQueryState> {
         return {...query, [COMPARE_TERMS_KEY]: compareTerms};
     }
 
+    protected storeOnComplete(): Params {
+        return { [COMPARE_TERMS_KEY]: null };
+    }
+
     private cleanStoredState() {
         this.store.params$.pipe(
             takeUntil(this.complete$),

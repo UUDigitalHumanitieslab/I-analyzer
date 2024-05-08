@@ -81,4 +81,14 @@ fdescribe('ComparedQueries', () => {
         expect(query.state$.value.queryText).toEqual('different test');
         expect(compared.state$.value).toEqual({primary: 'different test', compare: ['test', 'test2']});
     });
+
+    it('should not reset the query when destroyed', () => {
+        store.paramUpdates$.next({
+            query: 'test',
+            compareTerms: 'test2,test3,test4'
+        });
+
+        compared.complete();
+        expect(store.currentParams()).toEqual({ query: 'test' });
+    });
 });
