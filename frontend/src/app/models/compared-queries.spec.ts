@@ -27,14 +27,16 @@ fdescribe('ComparedQueries', () => {
         expect(compared.state$.value).toEqual({ primary: undefined, compare: [] });
     });
 
-    it('should ignore overlap with the query text', () => {
+    it('should clean overlapping queries', () => {
         compared.setParams({ primary: undefined, compare: [ 'test', 'test2'] });
-
-        query.setParams({ searchFields: [mockField2] });
-        expect(compared.state$.value).toEqual({ primary: undefined, compare: ['test', 'test2'] });
 
         query.setQueryText('test');
         expect(compared.state$.value).toEqual({ primary: 'test', compare: ['test2'] });
+        expect(store.currentParams()['compareTerms']).toBe('test2');
+
+        compared.setParams({ compare: ['test2', 'test3', 'test2']});
+        expect(compared.state$.value).toEqual({ primary: 'test', compare: ['test2', 'test3'] });
+        expect(store.currentParams()['compareTerms']).toBe('test2,test3');
     });
 
     it('should have all queries as an observable', () => {
@@ -78,14 +80,5 @@ fdescribe('ComparedQueries', () => {
         // compared queries are reset when query text changes
         expect(query.state$.value.queryText).toEqual('different test');
         expect(compared.state$.value).toEqual({primary: 'different test', compare: ['test', 'test2']});
-    });
-
-    it('should encode stored values', () => {
-        compared.setParams({
-            compare: ['test testing','test']
-        });
-        expect(store.currentParams()).toEqual({
-            compareTerms: 'test%20testing,test'
-        });
     });
 });
