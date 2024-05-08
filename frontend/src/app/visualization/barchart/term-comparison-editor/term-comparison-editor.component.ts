@@ -1,73 +1,57 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { ActivatedRoute, Params, Router } from '@angular/router';
-
-import { ParamDirective } from '../../../param/param-directive';
-import { ParamService } from '../../../services';
+import { Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
 import { formIcons } from '../../../shared/icons';
+import { RouterStoreService } from '../../../store/router-store.service';
+import { ComparedQueries } from '../../../models/compared-queries';
+import { Observable } from 'rxjs';
+import * as _ from 'lodash';
+import { map } from 'rxjs/operators';
 
 @Component({
     selector: 'ia-term-comparison-editor',
     templateUrl: './term-comparison-editor.component.html',
     styleUrls: ['./term-comparison-editor.component.scss'],
 })
-export class TermComparisonEditorComponent
-    extends ParamDirective
-    implements OnChanges {
-    @Input() initialValue = []; // starting value
+export class TermComparisonEditorComponent implements OnDestroy {
     @Input() termLimit = 10;
 
     @Output() queriesChanged = new EventEmitter<string[]>();
     @Output() clearQueries = new EventEmitter<void>();
 
+    comparedQueries: ComparedQueries;
+
     queries: string[] = [];
-    public showReset = false;
-    nullableParameters = ['compareTerm'];
+    showReset$: Observable<boolean>;
 
     formIcons = formIcons;
 
     constructor(
-        route: ActivatedRoute,
-        router: Router,
-        paramService: ParamService
+        private routerStoreService: RouterStoreService,
     ) {
-        super(route, router, paramService);
+        this.comparedQueries = new ComparedQueries(this.routerStoreService);
+
+        // note that state$ and allQueries$ are completed by this component's ngOnDestroy
+        this.comparedQueries.state$.subscribe(state => this.queries = state.compare);
+        this.comparedQueries.allQueries$.subscribe(this.queriesChanged);
+
+        this.showReset$ = this.comparedQueries.state$.pipe(
+            map(state => !_.isEmpty(state.compare))
+        );
     }
 
-    get disableConfirm(): boolean {
-        if (!this.queries || !this.queries.length) {
-            return false;
-        }
-        return this.queries.length >= this.termLimit;
+    valid(queryInput: string[]) {
+        return queryInput.length <= this.termLimit;
     }
 
-    initialize() {}
-
-    teardown() {}
-
-    setStateFromParams(params: Params) {
-        if (params.has('compareTerm')) {
-            this.queries = params.getAll('compareTerm');
-            this.queriesChanged.emit(this.queries);
-            this.showReset = true;
-        }
-    }
-
-    ngOnChanges(changes: SimpleChanges): void {
-        this.queries = this.initialValue;
-        if (this.queries.length > 1) {
-            this.showReset = true;
-        }
+    ngOnDestroy(): void {
+        this.comparedQueries.complete();
     }
 
     confirmQueries() {
-        this.setParams({ compareTerm: this.queries });
-        this.queriesChanged.emit(this.queries);
-        this.showReset = true;
+        this.comparedQueries.setParams({compare: this.queries});
     }
 
-    signalClearQueries() {
-        this.queries = this.initialValue;
+    reset() {
+        this.comparedQueries.reset();
         this.clearQueries.emit();
-        this.showReset = false;
     }
 }

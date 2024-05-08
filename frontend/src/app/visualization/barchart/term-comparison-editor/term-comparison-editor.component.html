@@ -6,7 +6,7 @@
                     <p-chips name="queries" [(ngModel)]="queries" separator="," addOnBlur="true"></p-chips>
                 </div>
                 <div class="control">
-                    <button class="button is-primary" (click)="confirmQueries()" [disabled]="disableConfirm">
+                    <button class="button is-primary" (click)="confirmQueries()" [disabled]="!valid(queries)">
                         <span class="icon">
                             <fa-icon [icon]="formIcons.confirm" aria-hidden="true"></fa-icon>
                         </span>
@@ -15,8 +15,8 @@
                 </div>
             </div>
         </div>
-        <div *ngIf="showReset" class="control">
-            <button class="button" (click)="signalClearQueries()">
+        <div *ngIf="showReset$ | async" class="control">
+            <button class="button" (click)="reset()">
                 <span class="icon">
                     <fa-icon [icon]="formIcons.reset" aria-hidden="true"></fa-icon>
                 </span>
