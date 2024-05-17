@@ -9,6 +9,7 @@ from os.path import join, isfile, splitext
 from datetime import datetime
 import re
 import openpyxl
+from ianalyzer_readers.xml_tag import Tag, SiblingTag, ParentTag
 
 from django.conf import settings
 
@@ -40,13 +41,9 @@ class Periodicals(XMLCorpusDefinition):
     def es_settings(self):
         return es_settings(self.languages[:1], stopword_analysis=True, stemming_analysis=True)
 
-    tag_toplevel = 'articles'
-    tag_entry = 'artInfo'
-
-    # New data members
-    filename_pattern = re.compile('[a-zA-z]+_(\d+)_(\d+)')
-    non_xml_msg = 'Skipping non-XML file {}'
-    non_match_msg = 'Skipping XML file with nonmatching name {}'
+    tag_toplevel = Tag('articles')
+    tag_entry = Tag('artInfo')
+    external_file_tag_toplevel = Tag('issue')
 
     mimetype = 'image/jpeg'
 
@@ -112,9 +109,7 @@ class Periodicals(XMLCorpusDefinition):
             display_name='ID',
             description='Unique identifier of the entry.',
             es_mapping=keyword_mapping(),
-            extractor=extract.XML(tag=None,
-                                  toplevel=False,
-                                  attribute='id'),
+            extractor=extract.XML(attribute='id'),
         ),
         FieldDefinition(
             name='issue',
@@ -147,7 +142,7 @@ class Periodicals(XMLCorpusDefinition):
             description='Text content.',
             es_mapping=main_content_mapping(True, True, True, 'en'),
             results_overview=True,
-            extractor=extract.XML(tag='ocrText', flatten=True),
+            extractor=extract.XML(Tag('ocrText'), flatten=True),
             search_field_core=True,
             visualizations=["wordcloud"],
             language='en',
@@ -163,15 +158,9 @@ class Periodicals(XMLCorpusDefinition):
                                                   'indicator is in this range.'
                                               )
                                               ),
-            extractor=extract.XML(tag='ocr',
-                external_file={
-                    'xml_tag_toplevel': 'issue',
-                    'xml_tag_entry': 'article'
-                },
-                secondary_tag = {
-                    'tag': 'id',
-                    'match': 'id'
-                }
+            extractor=extract.XML(
+                lambda metadata: Tag('id', string=metadata['id']),
+                SiblingTag('ocr'),
             ),
             sortable=True
         ),
@@ -179,15 +168,10 @@ class Periodicals(XMLCorpusDefinition):
             name='title',
             display_name='Article title',
             description='Title of the article.',
-            extractor=extract.XML(tag='ti',
-                external_file={
-                    'xml_tag_toplevel': 'issue',
-                    'xml_tag_entry': 'article'
-                },
-                secondary_tag = {
-                    'tag': 'id',
-                    'match': 'id'
-                }
+            extractor=extract.XML(
+                lambda metadata: Tag('id', string=metadata['id']),
+                SiblingTag('ti'),
+                external_file=True,
             ),
             visualizations=['wordcloud']
         ),
@@ -196,15 +180,10 @@ class Periodicals(XMLCorpusDefinition):
             es_mapping={'type': 'keyword'},
             display_name='Starting column',
             description='Which column the article starts in.',
-            extractor=extract.XML(tag='sc',
-                external_file={
-                    'xml_tag_toplevel': 'issue',
-                    'xml_tag_entry': 'article'
-                },
-                secondary_tag = {
-                    'tag': 'id',
-                    'match': 'id'
-                }
+            extractor=extract.XML(
+                lambda metadata: Tag('id', string=metadata['id']),
+                SiblingTag('sc'),
+                external_file=True,
             )
         ),
         FieldDefinition(
@@ -212,15 +191,10 @@ class Periodicals(XMLCorpusDefinition):
             display_name='Page count',
             description='How many pages the article covers.',
             es_mapping={'type': 'integer'},
-            extractor=extract.XML(tag='pc',
-                external_file={
-                    'xml_tag_toplevel': 'issue',
-                    'xml_tag_entry': 'article'
-                },
-                secondary_tag = {
-                    'tag': 'id',
-                    'match': 'id'
-                }
+            extractor=extract.XML(
+                lambda metadata: Tag('id', string=metadata['id']),
+                SiblingTag('pc'),
+                external_file=True,
             )
         ),
         FieldDefinition(
@@ -228,15 +202,10 @@ class Periodicals(XMLCorpusDefinition):
             display_name='Word count',
             description='Number of words in the article.',
             es_mapping={'type': 'integer'},
-            extractor=extract.XML(tag='wordCount',
-                external_file={
-                    'xml_tag_toplevel': 'issue',
-                    'xml_tag_entry': 'article'
-                },
-                secondary_tag = {
-                    'tag': 'id',
-                    'match': 'id'
-                }
+            extractor=extract.XML(
+                lambda metadata: Tag('id', string=metadata['id']),
+                SiblingTag('wordCount'),
+                external_file=True,
             )
         ),
         FieldDefinition(
@@ -245,15 +214,10 @@ class Periodicals(XMLCorpusDefinition):
             display_name='Category',
             description='Article category.',
             es_mapping={'type': 'keyword'},
-            extractor=extract.XML(tag='ct',
-                external_file={
-                    'xml_tag_toplevel': 'issue',
-                    'xml_tag_entry': 'article'
-                },
-                secondary_tag = {
-                    'tag': 'id',
-                    'match': 'id'
-                }
+            extractor=extract.XML(
+                lambda metadata: Tag('id', string=metadata['id']),
+                SiblingTag('ct'),
+                external_file=True,
             ),
             search_filter=filters.MultipleChoiceFilter(
                 description='Accept only articles in these categories.',
@@ -266,16 +230,11 @@ class Periodicals(XMLCorpusDefinition):
             display_name='Page number',
             description='At which page the article starts.',
             es_mapping={'type': 'integer'},
-            extractor=extract.XML(tag='pa',
-                parent_level=1,
-                external_file={
-                    'xml_tag_toplevel': 'issue',
-                    'xml_tag_entry': 'article'
-                },
-                secondary_tag = {
-                    'tag': 'id',
-                    'match': 'id'
-                },
+            extractor=extract.XML(
+                lambda metadata: Tag('id', string=metadata['id']),
+                ParentTag(2),
+                Tag('pa'),
+                external_file=True,
                 transform=lambda x: re.sub('[\[\]]', '', x)
             )
         ),

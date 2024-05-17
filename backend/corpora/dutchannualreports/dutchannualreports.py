@@ -4,6 +4,7 @@ import os
 import os.path as op
 import logging
 from datetime import datetime
+from ianalyzer_readers.xml_tag import Tag
 
 from django.conf import settings
 
@@ -20,7 +21,6 @@ from media.media_url import media_url
 class DutchAnnualReports(XMLCorpusDefinition):
     """ Alto XML corpus of Dutch annual reports. """
 
-    # Data overrides from .common.Corpus (fields at bottom of class)
     title = "Dutch Annual Reports"
     description = "Annual reports of Dutch financial and non-financial institutes"
     min_date = datetime(year=1957, month=1, day=1)
@@ -38,9 +38,8 @@ class DutchAnnualReports(XMLCorpusDefinition):
 
     mimetype = 'application/pdf'
 
-    # Data overrides from .common.XMLCorpus
-    tag_toplevel = 'alto'
-    tag_entry = 'Page'
+    tag_toplevel = Tag('alto')
+    tag_entry = Tag('Page')
 
     # New data members
     non_xml_msg = 'Skipping non-XML file {}'
@@ -187,9 +186,8 @@ class DutchAnnualReports(XMLCorpusDefinition):
             description='Text content of the page.',
             results_overview=True,
             extractor=XML(
-                tag='String',
+                Tag('String'),
                 attribute='CONTENT',
-                recursive=True,
                 multiple=True,
                 transform=lambda x: ' '.join(x),
             ),

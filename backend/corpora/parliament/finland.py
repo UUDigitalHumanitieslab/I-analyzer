@@ -1,5 +1,6 @@
 from datetime import datetime
 from glob import glob
+from ianalyzer_readers.xml_tag import Tag, FindParentTag, PreviousSiblingTag, ParentTag
 
 from addcorpus.python_corpora.corpus import XMLCorpusDefinition
 from addcorpus.python_corpora.extract import XML, Combined, Constant, Metadata
@@ -17,23 +18,9 @@ def format_role(values):
         clean_id = id.replace('#', '')
         return roles.get(clean_id, clean_id)
 
-def speech_metadata(speech_node):
-    """Gets the `note` sibling to the speech."""
-    return speech_node.find_previous_sibling('note')
+# def find_topic(speech_node):
+#     return speech_node.parent.find_previous_sibling('head')
 
-def find_topic(speech_node):
-    return speech_node.parent.find_previous_sibling('head')
-
-def find_debate_node(speech_node):
-    return speech_node.find_parent('TEI')
-
-def find_debate_title(speech_node):
-    debate_node = find_debate_node(speech_node)
-    return debate_node.teiHeader.find('title')
-
-def find_date(speech_node):
-    debate_node = find_debate_node(speech_node)
-    return debate_node.teiHeader.find('date')
 
 
 class ParliamentFinland(Parliament, XMLCorpusDefinition):
@@ -67,27 +54,31 @@ class ParliamentFinland(Parliament, XMLCorpusDefinition):
 
     document_context = document_context()
 
-    tag_toplevel = 'teiCorpus'
-    tag_entry = 'u'
+    tag_toplevel = Tag('teiCorpus')
+    tag_entry = Tag('u')
 
     country = field_defaults.country()
     country.extractor = Constant('Finland')
 
     date = field_defaults.date()
     date.extractor = XML(
-        transform_soup_func = find_date,
-        attribute = 'when'
+        FindParentTag('TEI'),
+        Tag('teiHeader', recursive=False),
+        Tag('date'),
+        attribute='when'
     )
 
     debate_id = field_defaults.debate_id()
     debate_id.extractor = XML(
-        transform_soup_func = find_debate_node,
-        attribute = 'xml:id'
+        FindParentTag('TEI'),
+        attribute='xml:id'
     )
 
     debate_title = field_defaults.debate_title()
     debate_title.extractor = XML(
-        transform_soup_func = find_debate_title,
+        FindParentTag('TEI'),
+        Tag('teiHeader', recursive=False),
+        Tag('title'),
         transform = clean_value,
     )
 
@@ -104,7 +95,7 @@ class ParliamentFinland(Parliament, XMLCorpusDefinition):
 
     role = field_defaults.parliamentary_role()
     role.extractor = Combined(
-        XML(attribute = 'ana'),
+        XML(attribute='ana'),
         Metadata('roles'),
         transform = format_role,
     )
@@ -125,26 +116,25 @@ class ParliamentFinland(Parliament, XMLCorpusDefinition):
     speech.extractor = XML(transform = clean_value)
 
     speech_id = field_defaults.speech_id()
-    speech_id.extractor = XML(
-        attribute = 'xml:id'
-    )
+    speech_id.extractor = XML(attribute='xml:id')
 
     speech_type = field_defaults.speech_type()
     speech_type.extractor = XML(
-        transform_soup_func = speech_metadata,
+        PreviousSiblingTag('note'),
         attribute = 'speechType'
     )
     speech_type.language = 'fi'
 
     topic = field_defaults.topic()
     topic.extractor = XML(
-        transform_soup_func = find_topic,
+        ParentTag(),
+        PreviousSiblingTag('head'),
         transform = clean_value,
     )
 
     url = field_defaults.url()
     url.extractor = XML(
-        transform_soup_func = speech_metadata,
+        PreviousSiblingTag('note'),
         attribute = 'link'
     )
 

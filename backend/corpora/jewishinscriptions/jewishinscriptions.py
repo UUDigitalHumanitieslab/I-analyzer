@@ -3,6 +3,7 @@ import os
 import os.path as op
 import logging
 from datetime import datetime
+from ianalyzer_readers.xml_tag import Tag, CurrentTag
 
 from django.conf import settings
 
@@ -15,7 +16,6 @@ from addcorpus.es_mappings import keyword_mapping, main_content_mapping
 class JewishInscriptions(XMLCorpusDefinition):
     """ Alto XML corpus of Jewish funerary inscriptions. """
 
-    # Data overrides from .common.Corpus (fields at bottom of class)
     title = "Jewish Funerary Inscriptions"
     description = "A collection of inscriptions on Jewish burial sites"
     min_date = datetime(year=769, month=1, day=1)
@@ -27,9 +27,9 @@ class JewishInscriptions(XMLCorpusDefinition):
     languages = ['heb', 'lat']
     category = 'inscription'
 
-    # Data overrides from .common.XMLCorpus
-    tag_toplevel = ''
-    tag_entry = 'TEI'
+
+    tag_toplevel = CurrentTag()
+    tag_entry = Tag('TEI')
 
     # New data members
     filename_pattern = re.compile('\d+')
@@ -60,8 +60,10 @@ class JewishInscriptions(XMLCorpusDefinition):
             display_name='ID',
             description='ID of the inscription entry.',
             extractor=XML(
-                tag=['teiHeader', 'fileDesc', 'titleStmt', 'title'],
-                toplevel=False,
+                Tag('teiHeader'),
+                Tag('fileDesc'),
+                Tag('titleStmt'),
+                Tag('title'),
             ),
             es_mapping=keyword_mapping()
         ),
@@ -76,8 +78,13 @@ class JewishInscriptions(XMLCorpusDefinition):
                 upper=max_date.year,
             ),
             extractor=XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'history', 'origin', 'origDate'],
-                toplevel=False,
+                Tag('teiHeader'),
+                Tag('fileDesc'),
+                Tag('sourceDesc'),
+                Tag('msDesc'),
+                Tag('history'),
+                Tag('origin'),
+                Tag('origDate'),
             ),
             csv_core=True,
             sortable=True,
@@ -90,8 +97,13 @@ class JewishInscriptions(XMLCorpusDefinition):
             display_name='Date comments',
             description='Additional comments on the year.',
             extractor=XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'history', 'origin', 'remarksOnDate'],
-                toplevel=False,
+                Tag('teiHeader'),
+                Tag('fileDesc'),
+                Tag('sourceDesc'),
+                Tag('msDesc'),
+                Tag('history'),
+                Tag('origin'),
+                Tag('remarksOnDate'),
             ),
         ),
         FieldDefinition(
@@ -99,8 +111,9 @@ class JewishInscriptions(XMLCorpusDefinition):
             display_name='Transcription',
             description='Text content of the inscription.',
             extractor=XML(
-                tag=['text', 'body', 'transcription'],
-                toplevel=False,
+                Tag('text'),
+                Tag('body'),
+                Tag('transcription'),
                 flatten=True
             ),
             search_field_core=True,
@@ -118,30 +131,21 @@ class JewishInscriptions(XMLCorpusDefinition):
                 description='Search only within these incipit types.',
                 option_count=8
             ),
-            extractor=XML(
-                tag=['text', 'body', 'incipit'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('text'), Tag('body'), Tag('incipit')),
             visualizations=['resultscount', 'termfrequency']
         ),
         FieldDefinition(
             name='names',
             display_name='Names',
             description='Names of the buried persons.',
-            extractor=XML(
-                tag=['text', 'body', 'namesMentioned'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('text'), Tag('body'), Tag('namesMentioned')),
             search_field_core=True
         ),
         FieldDefinition(
             name='names_hebrew',
             display_name='Names (Hebrew)',
             description='Names in Hebrew of the buried persons.',
-            extractor=XML(
-                tag=['text', 'body', 'namesMentionedHebrew'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('text'), Tag('body'), Tag('namesMentionedHebrew')),
         ),
         FieldDefinition(
             name='sex',
@@ -152,10 +156,7 @@ class JewishInscriptions(XMLCorpusDefinition):
                 description='Search only within these genders.',
                 option_count=3,
             ),
-            extractor=XML(
-                tag=['text', 'body', 'sex'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('text'), Tag('body'), Tag('sex')),
             csv_core=True
         ),
         FieldDefinition(
@@ -168,10 +169,7 @@ class JewishInscriptions(XMLCorpusDefinition):
                  lower=0,
                  upper=100,
             ),
-            extractor=XML(
-                tag=['text', 'body', 'age'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('text'), Tag('body'), Tag('age')),
             csv_core=True,
             sortable=True
         ),
@@ -179,10 +177,7 @@ class JewishInscriptions(XMLCorpusDefinition):
             name='age_remarks',
             display_name='Age remarks',
             description='Additional comments on the age.',
-            extractor=XML(
-                tag=['text', 'body', 'remarksOnAge'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('text'), Tag('body'), Tag('remarksOnAge')),
         ),
         FieldDefinition(
             name='provenance',
@@ -194,8 +189,13 @@ class JewishInscriptions(XMLCorpusDefinition):
                 option_count = 8
             ),
             extractor=XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'history', 'origin', 'provenance'],
-                toplevel=False,
+                Tag('teiHeader'),
+                Tag('fileDesc'),
+                Tag('sourceDesc'),
+                Tag('msDesc'),
+                Tag('history'),
+                Tag('origin'),
+                Tag('provenance'),
             ),
             visualizations=['resultscount', 'termfrequency']
         ),
@@ -204,10 +204,7 @@ class JewishInscriptions(XMLCorpusDefinition):
             display_name='Inscription type',
             description='Type of inscription found.',
             es_mapping={'type': 'keyword'},
-            extractor=XML(
-                tag=['text', 'body', 'inscriptionType'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('text'), Tag('body'), Tag('inscriptionType')),
             csv_core=True
         ),
         FieldDefinition(
@@ -219,10 +216,7 @@ class JewishInscriptions(XMLCorpusDefinition):
                 description='Search only within these iconography types.',
                 option_count=8
             ),
-            extractor=XML(
-                tag=['text', 'body', 'iconographyType'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('text'), Tag('body'), Tag('iconographyType')),
             csv_core=True,
             visualizations=['resultscount', 'termfrequency']
         ),
@@ -230,10 +224,7 @@ class JewishInscriptions(XMLCorpusDefinition):
             name='iconography_desc',
             display_name='Iconography description',
             description='Description of the iconography on the inscription.',
-            extractor=XML(
-                tag=['text', 'body', 'iconographyDescription'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('text'), Tag('body'), Tag('iconographyDescription')),
         ),
         FieldDefinition(
             name='material',
@@ -244,10 +235,7 @@ class JewishInscriptions(XMLCorpusDefinition):
                 description='Search only within these material types.',
                 option_count=8
             ),
-            extractor=XML(
-                tag=['text', 'body', 'material'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('text'), Tag('body'), Tag('material')),
             csv_core=True,
             visualizations=['resultscount', 'termfrequency']
         ),
@@ -260,10 +248,7 @@ class JewishInscriptions(XMLCorpusDefinition):
                 description='Search only within these languages.',
                 option_count = 3
             ),
-            extractor=XML(
-                tag=['text', 'body', 'language'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('text'), Tag('body'), Tag('language')),
             csv_core=True,
             visualizations=['resultscount', 'termfrequency']
         ),
@@ -278,10 +263,7 @@ class JewishInscriptions(XMLCorpusDefinition):
             #     lower=0,
             #     upper=100,
             # ),
-            extractor=XML(
-                tag=['text', 'body', 'numberOfLinesSurviving'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('text'), Tag('body'), Tag('numberOfLinesSurviving')),
             csv_core=True
         ),
         FieldDefinition(
@@ -290,8 +272,12 @@ class JewishInscriptions(XMLCorpusDefinition):
             description='Storage location of the published work.',
             es_mapping=keyword_mapping(),
             extractor=XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'msIdentifier', 'location'],
-                toplevel=False,
+                Tag('teiHeader'),
+                Tag('fileDesc'),
+                Tag('sourceDesc'),
+                Tag('msDesc'),
+                Tag('msIdentifier'),
+                Tag('location'),
             ),
             csv_core=True,
             results_overview=True
@@ -301,8 +287,12 @@ class JewishInscriptions(XMLCorpusDefinition):
             display_name='Publication',
             description='Article or book where inscription is published.',
             extractor=XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'msIdentifier', 'publication'],
-                toplevel=False,
+                Tag('teiHeader'),
+                Tag('fileDesc'),
+                Tag('sourceDesc'),
+                Tag('msDesc'),
+                Tag('msIdentifier'),
+                Tag('publication'),
             ),
             es_mapping=keyword_mapping(True)
         ),
@@ -310,40 +300,28 @@ class JewishInscriptions(XMLCorpusDefinition):
             name='facsimile',
             display_name='Facsimile',
             description='Photo or facsimile of publication.',
-            extractor=XML(
-                tag=['facsimile', 'photoFacsimile'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('facsimile'), Tag('photoFacsimile')),
             es_mapping=keyword_mapping()
         ),
         FieldDefinition(
             name='photos_leonard',
             display_name='Photos (Leonard)',
             description='Photos by Leonard.',
-            extractor=XML(
-                tag=['facsimile', 'photosLeonard'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('facsimile'), Tag('photosLeonard')),
             es_mapping=keyword_mapping()
         ),
         FieldDefinition(
             name='3D_image',
             display_name='3D image',
             description='3D image of inscription.',
-            extractor=XML(
-                tag=['facsimile', 'image3D'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('facsimile'), Tag('image3D')),
             es_mapping=keyword_mapping()
         ),
         FieldDefinition(
             name='commentary',
             display_name='Commentary',
             description='Extra comments, questions or remarks on this inscription.',
-            extractor=XML(
-                tag=['text', 'body', 'commentary'],
-                toplevel=False,
-            ),
+            extractor=XML(Tag('text'), Tag('body'), Tag('commentary')),
             search_field_core=True,
         )
     ]

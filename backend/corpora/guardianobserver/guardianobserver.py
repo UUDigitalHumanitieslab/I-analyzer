@@ -11,6 +11,7 @@ from os.path import join, getsize
 from datetime import datetime
 from zipfile import ZipFile
 from io import BytesIO
+from ianalyzer_readers.xml_tag import Tag
 
 from django.conf import settings
 
@@ -46,7 +47,7 @@ class GuardianObserver(XMLCorpusDefinition):
     def es_settings(self):
         return es_settings(self.languages[:1], stopword_analysis=True, stemming_analysis=True)
 
-    tag_toplevel = 'Record'
+    tag_toplevel = Tag('Record')
 
     def sources(self, start=datetime.min, end=datetime.max):
         '''
@@ -84,9 +85,9 @@ class GuardianObserver(XMLCorpusDefinition):
                 )
             ),
             extractor=extract.XML(
-                tag='NumericPubDate', toplevel=True,
+                Tag('NumericPubDate'),
                 transform=lambda x: '{y}-{m}-{d}'.format(y=x[:4],m=x[4:6],d=x[6:])
-                )
+            ),
         ),
         FieldDefinition(
             name='date-pub',
@@ -95,30 +96,28 @@ class GuardianObserver(XMLCorpusDefinition):
             csv_core=True,
             results_overview=True,
             description='Publication date as full string, as found in source file',
-            extractor=extract.XML(
-                tag='AlphaPubDate', toplevel=True
-            )
+            extractor=extract.XML(Tag('AlphaPubDate'))
         ),
         FieldDefinition(
             name='id',
             es_mapping=keyword_mapping(),
             display_name='ID',
             description='Article identifier.',
-            extractor=extract.XML(tag='RecordID', toplevel=True)
+            extractor=extract.XML(Tag('RecordID')),
         ),
         FieldDefinition(
             name='pub_id',
             es_mapping=keyword_mapping(),
             display_name='Publication ID',
             description='Publication identifier',
-            extractor=extract.XML(tag='PublicationID', toplevel=True, recursive=True)
+            extractor=extract.XML(Tag('PublicationID'))
         ),
         FieldDefinition(
             name='page',
             es_mapping=keyword_mapping(),
             display_name='Page',
             description='Start page label, from source (1, 2, 17A, ...).',
-            extractor=extract.XML(tag='StartPage', toplevel=True)
+            extractor=extract.XML(Tag('StartPage'))
         ),
         FieldDefinition(
             name='title',
@@ -126,14 +125,14 @@ class GuardianObserver(XMLCorpusDefinition):
             search_field_core=True,
             visualizations=['wordcloud'],
             description='Article title.',
-            extractor=extract.XML(tag='RecordTitle', toplevel=True)
+            extractor=extract.XML(Tag('RecordTitle'))
         ),
         FieldDefinition(
             name='source-paper',
             es_mapping=keyword_mapping(True),
             display_name='Source paper',
             description='Credited as source.',
-            extractor=extract.XML(tag='Title', toplevel=True, recursive=True),
+            extractor=extract.XML(Tag('Title')),
             search_filter=filters.MultipleChoiceFilter(
                 description='Accept only articles from these source papers.',
                 option_count=5
@@ -144,14 +143,14 @@ class GuardianObserver(XMLCorpusDefinition):
             mapping=keyword_mapping(True),
             display_name='Place',
             description='Place in which the article was published',
-            extractor=extract.XML(tag='Qualifier', toplevel=True, recursive=True)
+            extractor=extract.XML(Tag('Qualifier'))
         ),
         FieldDefinition(
             name='author',
             mapping=keyword_mapping(True),
             display_name='Author',
             description='Article author',
-            extractor=extract.XML(tag='PersonName', toplevel=True, recursive=True)
+            extractor=extract.XML(Tag('PersonName'))
         ),
         FieldDefinition(
             name='category',
@@ -163,7 +162,7 @@ class GuardianObserver(XMLCorpusDefinition):
                 description='Accept only articles in these categories.',
                 option_count=19
             ),
-            extractor=extract.XML(tag='ObjectType', toplevel=True),
+            extractor=extract.XML(Tag('ObjectType')),
             csv_core=True
         ),
         FieldDefinition(
@@ -175,7 +174,7 @@ class GuardianObserver(XMLCorpusDefinition):
             description='Raw OCR\'ed text (content).',
             results_overview=True,
             search_field_core=True,
-            extractor=extract.XML(tag='FullText', toplevel=True, flatten=True),
+            extractor=extract.XML(Tag('FullText'), flatten=True),
             language='en',
         )
     ]

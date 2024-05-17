@@ -6,6 +6,7 @@ import re
 from bs4 import BeautifulSoup
 import json
 import csv
+from ianalyzer_readers.xml_tag import Tag, PreviousSiblingTag
 
 from addcorpus.python_corpora.corpus import CorpusDefinition, CSVCorpusDefinition, XMLCorpusDefinition
 from addcorpus.python_corpora.extract import Constant, CSV, XML, Metadata, Combined, Backup
@@ -246,8 +247,6 @@ def extract_number_from_id(id):
     if match:
         return int(match.group(0))
 
-def find_topic_heading(speech_node):
-    return speech_node.find_previous_sibling('heading')
 
 def get_debate_id(filename):
     name, _ = os.path.splitext(filename)
@@ -319,8 +318,8 @@ class ParliamentIrelandNew(XMLCorpusDefinition):
     min_date = datetime(year=2014, month=1, day=1)
     max_date = datetime(year=2020, month=12, day=31)
 
-    tag_toplevel = 'debate'
-    tag_entry = 'speech'
+    tag_toplevel = Tag('debate')
+    tag_entry = Tag('speech')
 
     def sources(self, start, end):
         if in_date_range(self, start, end):
@@ -359,9 +358,8 @@ class ParliamentIrelandNew(XMLCorpusDefinition):
 
     date = field_defaults.date()
     date.extractor = XML(
-        tag = 'docDate',
+        Tag('docDate'),
         attribute = 'date',
-        recursive = True,
         toplevel = True,
     )
 
@@ -388,7 +386,7 @@ class ParliamentIrelandNew(XMLCorpusDefinition):
 
     speech = field_defaults.speech()
     speech.extractor = XML(
-        'p',
+        Tag('p'),
         multiple = True,
         transform = strip_and_join_paragraphs,
     )
@@ -402,7 +400,7 @@ class ParliamentIrelandNew(XMLCorpusDefinition):
 
     topic = field_defaults.topic()
     topic.extractor = XML(
-        transform_soup_func = find_topic_heading,
+        PreviousSiblingTag('heading'),
         extract_soup_func = lambda node : node.text,
     )
 

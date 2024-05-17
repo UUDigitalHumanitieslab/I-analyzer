@@ -5,6 +5,8 @@ from datetime import datetime
 from os import makedirs, remove
 from typing import Optional
 from zipfile import ZipFile, BadZipFile
+from ianalyzer_readers.xml_tag import Tag, ParentTag
+import bs4
 
 from django.conf import settings
 
@@ -17,18 +19,23 @@ from addcorpus.python_corpora import filters
 logger = logging.getLogger('indexing')
 
 
-def rdf_description_extractor(tag, section='xml', **kwargs):
-    '''rdf:Description extractor
+def _rdf_description_extractor(tag: Tag, section='xml', **kwargs) -> extract.XML:
+    '''
+    Extracts a child of the rdf:Description tag
+
     There are two rdf:Description tags available in the data:
         - description about the open data enrichment
         - description about the source
     There is only deterministic way to select the right one:
-        - check the dcterms:format sibling tag'''
+        - check the dcterms:format sibling tag
+    '''
     return extract.XML(
-        tag=tag,
-        secondary_tag={'tag': 'dcterms:format', 'exact': f'text/{section}'},
+        Tag('dcterms:format', string=f'text/{section}'),
+        ParentTag(1),
+        tag,
         **kwargs
     )
+
 
 
 class Rechtspraak(XMLCorpusDefinition):
@@ -49,7 +56,7 @@ class Rechtspraak(XMLCorpusDefinition):
     def es_settings(self):
         return es_settings(self.languages[:1], stopword_analysis=True, stemming_analysis=True)
 
-    tag_toplevel = 'open-rechtspraak'
+    tag_toplevel = Tag('open-rechtspraak')
 
     def unpack(self,
                min_year: Optional[int] = None,
@@ -144,7 +151,7 @@ class Rechtspraak(XMLCorpusDefinition):
             display_name='ID',
             description='',
             es_mapping=keyword_mapping(),
-            extractor=rdf_description_extractor('dcterms:identifier'),
+            extractor=_rdf_description_extractor(Tag('dcterms:identifier')),
             csv_core=True,
         ),
         FieldDefinition(
@@ -153,8 +160,8 @@ class Rechtspraak(XMLCorpusDefinition):
             description='Document has available text content.',
             es_mapping={'type': 'boolean'},
             extractor=extract.Backup(
-                extract.XML('uitspraak', flatten=True),
-                extract.XML('conclusie', flatten=True),
+                extract.XML(Tag('uitspraak'), flatten=True),
+                extract.XML(Tag('conclusie'), flatten=True),
                 extract.Constant(False),
                 transform=bool
             ),
@@ -176,7 +183,7 @@ class Rechtspraak(XMLCorpusDefinition):
         FieldDefinition(
             name='date',
             display_name='Date',
-            extractor=rdf_description_extractor('dcterms:date'),
+            extractor=_rdf_description_extractor(Tag('dcterms:date')),
             es_mapping={'type': 'date', 'format': 'yyyy-MM-dd'},
             results_overview=True,
             csv_core=True,
@@ -192,7 +199,7 @@ class Rechtspraak(XMLCorpusDefinition):
         FieldDefinition(
             name='issued',
             display_name='Publication Date',
-            extractor=rdf_description_extractor('dcterms:issued'),
+            extractor=_rdf_description_extractor(Tag('dcterms:issued')),
             es_mapping={'type': 'date', 'format': 'yyyy-MM-dd'},
             search_filter=filters.DateFilter(
                 min_date,
@@ -205,14 +212,14 @@ class Rechtspraak(XMLCorpusDefinition):
         FieldDefinition(
             name='publisher',
             display_name='Publisher',
-            extractor=rdf_description_extractor('dcterms:publisher'),
+            extractor=_rdf_description_extractor(Tag('dcterms:publisher')),
             es_mapping={'type': 'keyword'},
             language='nl',
         ),
         FieldDefinition(
             name='creator',
             display_name='Court',
-            extractor=rdf_description_extractor('dcterms:creator'),
+            extractor=_rdf_description_extractor(Tag('dcterms:creator')),
             es_mapping={'type': 'keyword'},
             csv_core=True,
             results_overview=True,
@@ -227,12 +234,12 @@ class Rechtspraak(XMLCorpusDefinition):
             name='zaaknr',
             display_name='Case Number',
             es_mapping=keyword_mapping(),
-            extractor=rdf_description_extractor('psi:zaaknummer')
+            extractor=_rdf_description_extractor(Tag('psi:zaaknummer')),
         ),
         FieldDefinition(
             name='type',
             display_name='Type',
-            extractor=rdf_description_extractor('dcterms:type'),
+            extractor=_rdf_description_extractor(Tag('dcterms:type')),
             es_mapping={'type': 'keyword'},
             csv_core=True,
             results_overview=True,
@@ -246,7 +253,7 @@ class Rechtspraak(XMLCorpusDefinition):
         FieldDefinition(
             name='procedure',
             display_name='(type of) Procedure',
-            extractor=rdf_description_extractor('psi:procedure'),
+            extractor=_rdf_description_extractor(Tag('psi:procedure')),
             csv_core=True,
             es_mapping={'type': 'keyword'},
             search_filter=filters.MultipleChoiceFilter(
@@ -260,13 +267,13 @@ class Rechtspraak(XMLCorpusDefinition):
             name='spatial',
             display_name='Location',
             es_mapping=keyword_mapping(),
-            extractor=rdf_description_extractor('dcterms:spatial'),
+            extractor=_rdf_description_extractor(Tag('dcterms:spatial')),
             language='nl',
         ),
         FieldDefinition(
             name='subject',
             display_name='Area of law',
-            extractor=rdf_description_extractor('dcterms:subject'),
+            extractor=_rdf_description_extractor(Tag('dcterms:subject')),
             csv_core=True,
             es_mapping={'type': 'keyword'},
             search_filter=filters.MultipleChoiceFilter(
@@ -279,8 +286,8 @@ class Rechtspraak(XMLCorpusDefinition):
         FieldDefinition(
             name='title',
             display_name='Title',
-            extractor=rdf_description_extractor(
-                'dcterms:title', section='html'),
+            extractor=_rdf_description_extractor(
+                Tag('dcterms:title'), section='html'),
             results_overview=True,
             search_field_core=True,
             language='nl',
@@ -288,7 +295,7 @@ class Rechtspraak(XMLCorpusDefinition):
         FieldDefinition(
             name='abstract',
             display_name='Abstract',
-            extractor=extract.XML(tag='inhoudsindicatie', flatten=True),
+            extractor=extract.XML(Tag('inhoudsindicatie'), flatten=True),
             results_overview=True,
             language='nl',
         ),
@@ -298,8 +305,8 @@ class Rechtspraak(XMLCorpusDefinition):
             display_type='text_content',
             es_mapping=main_content_mapping(True, True, True, 'nl'),
             extractor=extract.Backup(
-                extract.XML('uitspraak', flatten=True),
-                extract.XML('conclusie', flatten=True),
+                extract.XML(Tag('uitspraak'), flatten=True),
+                extract.XML(Tag('conclusie'), flatten=True),
                 extract.Constant('Content not available')
             ),
             csv_core=True,
@@ -312,7 +319,7 @@ class Rechtspraak(XMLCorpusDefinition):
             display_type='url',
             description='URL of the case on rechtspraak.nl',
             es_mapping=keyword_mapping(),
-            extractor=rdf_description_extractor(
-                'dcterms:identifier', section='html')
+            extractor=_rdf_description_extractor(
+                Tag('dcterms:identifier'), section='html')
         )
     ]

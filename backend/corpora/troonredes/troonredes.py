@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 import os
 from os.path import join, splitext
 from datetime import datetime
+from ianalyzer_readers.xml_tag import Tag
 
 from django.conf import settings
 
@@ -45,11 +46,10 @@ class Troonredes(XMLCorpusDefinition):
     def es_settings(self):
         return es_settings(self.languages[:1], stopword_analysis=True, stemming_analysis=True)
 
-    tag_toplevel = 'doc'
-    tag_entry = 'entry'
+    tag_toplevel = Tag('doc')
+    tag_entry = Tag('entry')
 
     non_xml_msg = 'Skipping non-XML file {}'
-    non_match_msg = 'Skipping XML file with nonmatching name {}'
 
     def sources(self, start=min_date, end=max_date):
         logger = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ class Troonredes(XMLCorpusDefinition):
             name='date',
             display_name='Date',
             description='Date of the speech',
-            extractor=extract.XML(tag='date'),
+            extractor=extract.XML(Tag('date')),
             es_mapping={'type': 'date', 'format': 'yyyy-MM-dd'},
             results_overview=True,
             csv_core=True,
@@ -90,7 +90,7 @@ class Troonredes(XMLCorpusDefinition):
             name='title',
             display_name='Title',
             description='title.',
-            extractor=extract.XML(tag='title'),
+            extractor=extract.XML(Tag('title')),
             results_overview=True,
             search_field_core=True,
             language='nl',
@@ -99,7 +99,7 @@ class Troonredes(XMLCorpusDefinition):
             name='monarch',
             display_name='Monarch',
             description='Monarch that gave the speech.',
-            extractor=extract.XML(tag='monarch'),
+            extractor=extract.XML(Tag('monarch')),
             es_mapping={'type': 'keyword'},
             results_overview=True,
             csv_core=True,
@@ -116,7 +116,7 @@ class Troonredes(XMLCorpusDefinition):
             name='speech_type',
             display_name='Speech type',
             description='Type of speech.',
-            extractor=extract.XML(tag='speech_type'),
+            extractor=extract.XML(Tag('speech_type')),
             es_mapping={'type': 'keyword'},
             results_overview=True,
             csv_core=True,
@@ -138,7 +138,7 @@ class Troonredes(XMLCorpusDefinition):
             results_overview=True,
             search_field_core=True,
             visualizations=['wordcloud', 'ngram'],
-            extractor=extract.XML(tag='content'),
+            extractor=extract.XML(Tag('content')),
             language='nl',
         ),
     ]

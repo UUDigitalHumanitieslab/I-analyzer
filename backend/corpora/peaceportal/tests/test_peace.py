@@ -157,8 +157,12 @@ HANDNOTES:
             "bibliography": [
                 "Noy 1995, p. 69-70 (83)"
             ],
-            "comments": """DATE:
+            "comments": """Found on the 3rd of December 1904 in Cub.XL. The lower third of the plaque was left unused. There are poits between the syllables. Ferrua thought it might be pagan.
+DATE:
 Uncertain
+
+AGE:
+not mentioned
 """,
             "transcription_he": "",
             "transcription_la": "",
@@ -265,6 +269,9 @@ def test_peace_imports(peace_test_settings, corpus_object):
         for key in target:
             tested_fields.add(key)
             assert key in doc
+            if doc[key] != target[key]:
+                compare = doc[key], target[key]
+                print(key)
             assert doc[key] == target[key]
 
         for key in doc:

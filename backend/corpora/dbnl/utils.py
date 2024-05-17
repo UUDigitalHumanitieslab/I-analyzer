@@ -183,7 +183,8 @@ def append_to_tag(soup, tag, padding):
 def pad_content(node):
     pad_cells = lambda n: append_to_tag(n, 'cell', ' ')
     pad_linebreaks = lambda n: append_to_tag(n, 'lb', '\n')
-    return pad_cells(pad_linebreaks(node))
+    pad_cells(pad_linebreaks(node))
+    return [node]
 
 def standardize_language_code(code):
     if code:

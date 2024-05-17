@@ -7,6 +7,7 @@ import re
 from datetime import datetime
 from os.path import join, split, splitext
 import os
+from ianalyzer_readers.xml_tag import Tag, SiblingTag
 
 from django.conf import settings
 
@@ -43,8 +44,9 @@ class DutchNewspapersPublic(XMLCorpusDefinition):
     def es_settings(self):
         return es_settings(self.languages[:1], stopword_analysis=True, stemming_analysis=True)
 
-    tag_toplevel = 'text'
-    tag_entry = 'p'
+    tag_toplevel = Tag('text')
+    tag_entry = Tag('p')
+    external_file_tag_toplevel = Tag('DIDL')
 
     # New data members
     definition_pattern = re.compile(r'didl')
@@ -137,18 +139,10 @@ class DutchNewspapersPublic(XMLCorpusDefinition):
             description="Link to record on Delpher",
             display_type='url',
             es_mapping=keyword_mapping(),
-            extractor=XML(tag='identifier',
-                                  toplevel=True,
-                                  recursive=True,
-                                  multiple=False,
-                                  secondary_tag={
-                                      'tag': 'recordIdentifier',
-                                      'match': 'id'
-                                  },
-                                  external_file={
-                                      'xml_tag_toplevel': 'DIDL',
-                                      'xml_tag_entry': 'dcx'
-                                  }
+            extractor=XML(
+                lambda metadata: Tag('recordIdentifier', string=metadata['id']),
+                SiblingTag('identifier'),
+                external_file=True
             )
         ),
         FieldDefinition(
@@ -179,13 +173,9 @@ class DutchNewspapersPublic(XMLCorpusDefinition):
                                                   'indicator is in this range.'
                                               )
                                               ),
-            extractor=XML(tag='OCRConfidencelevel',
-                toplevel=True,
-                recursive=True,
-                external_file={
-                    'xml_tag_toplevel': 'DIDL',
-                    'xml_tag_entry': 'dcx'
-                },
+            extractor=XML(
+                Tag('OCRConfidencelevel'),
+                external_file=True,
                 transform=lambda x: float(x)*100
             ),
             sortable=True
@@ -225,19 +215,11 @@ class DutchNewspapersPublic(XMLCorpusDefinition):
             description='Whether the item is an article, advertisment, etc.',
             csv_core=True,
             es_mapping={'type': 'keyword'},
-            extractor=XML(tag='subject',
-                                  toplevel=True,
-                                  recursive=True,
-                                  multiple=False,
-                                  secondary_tag={
-                                      'tag': 'recordIdentifier',
-                                      'match': 'id'
-                                  },
-                                  external_file={
-                                      'xml_tag_toplevel': 'DIDL',
-                                      'xml_tag_entry': 'dcx'
-                                  }
-                                  ),
+            extractor=XML(
+                lambda metadata: Tag('recordIdentifier', string=metadata['id']),
+                SiblingTag('subject'),
+                external_file=True
+            ),
             search_filter=filters.MultipleChoiceFilter(
                 description='Accept only articles in these categories.',
                 option_count=2,
@@ -276,7 +258,7 @@ class DutchNewspapersPublic(XMLCorpusDefinition):
             description='Article title',
             results_overview=True,
             search_field_core=True,
-            extractor=XML(tag='title', flatten=True, toplevel=True)
+            extractor=XML(Tag('title'), flatten=True, toplevel=True)
         ),
         FieldDefinition(
             name='id',
@@ -320,8 +302,13 @@ class DutchNewspapersPublic(XMLCorpusDefinition):
             es_mapping=main_content_mapping(True, True, True, 'nl'),
             results_overview=True,
             search_field_core=True,
-            extractor=XML(tag='p', multiple=True,
-                                  flatten=True, toplevel=True),
+            extractor=XML(
+                Tag('p'),
+                multiple=True,
+                flatten=True,
+                toplevel=True,
+                transform='\n'.join,
+            ),
             visualizations=["wordcloud"],
             language='nl',
         ),

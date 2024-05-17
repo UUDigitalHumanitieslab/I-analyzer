@@ -59,6 +59,17 @@
                 "/*": "*",
                 "/./~/*": "${webRoot}/node_modules/*"
             }
+        },
+        {
+            "name": "Python: Debug Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "purpose": [
+                "debug-test"
+            ],
+            "console": "internalConsole",
+            "justMyCode": false
         }
     ],
     "inputs": [

@@ -73,7 +73,7 @@ defusedxml==0.7.1
     #   djangosaml2
     #   pysaml2
     #   python3-openid
-dj-rest-auth[with-social,with_social]==4.0.1
+dj-rest-auth[with_social]==4.0.1
     # via -r requirements.in
 django==4.2.11
     # via
@@ -132,7 +132,7 @@ h11==0.14.0
     #   wsproto
 humanize==4.9.0
     # via flower
-ianalyzer-readers==0.1.0
+ianalyzer_readers @ git+https://github.com/UUDigitalHumanitieslab/ianalyzer-readers@21b78dc
     # via -r requirements.in
 idna==3.4
     # via
@@ -183,7 +183,6 @@ numpy==1.24.4
     #   fst-pso
     #   fuzzytm
     #   gensim
-    #   miniful
     #   pandas
     #   pyfume
     #   scikit-learn
@@ -331,7 +330,6 @@ scipy==1.10.1
     # via
     #   fuzzytm
     #   gensim
-    #   miniful
     #   pyfume
     #   scikit-learn
     #   simpful

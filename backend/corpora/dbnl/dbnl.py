@@ -2,6 +2,7 @@ from datetime import datetime
 import os
 import re
 from tqdm import tqdm
+from ianalyzer_readers.xml_tag import Tag, CurrentTag, TransformTag
 
 from django.conf import settings
 from addcorpus.python_corpora.corpus import XMLCorpusDefinition, FieldDefinition
@@ -25,8 +26,8 @@ class DBNL(XMLCorpusDefinition):
     languages = ['nl', 'dum', 'fr', 'la', 'fy', 'lat', 'en', 'nds', 'de', 'af']
     category = 'book'
 
-    tag_toplevel = 'TEI.2'
-    tag_entry = { 'name': 'div', 'attrs': {'type': 'chapter'} }
+    tag_toplevel = Tag('TEI.2')
+    tag_entry = Tag('div', type='chapter')
 
     document_context = {
         'context_fields': ['title_id'],
@@ -261,18 +262,18 @@ class DBNL(XMLCorpusDefinition):
             Pass(
                 Backup(
                     XML( # get the language on chapter-level if available
+                        CurrentTag(),
                         attribute='lang',
                         transform=lambda value: [value] if value else None,
                     ),
                     XML( # look for section-level codes
-                        {'name': 'div', 'attrs': {'type': 'section'}},
+                        Tag('div', type='section'),
                         attribute='lang',
                         multiple=True,
                     ),
                     XML( # look in the top-level metadata
-                        'language',
+                        Tag('language'),
                         toplevel=True,
-                        recursive=True,
                         multiple=True,
                         attribute='id'
                     ),
@@ -298,17 +299,17 @@ class DBNL(XMLCorpusDefinition):
         extractor=Pass(
             Backup(
                 XML( # get the language on chapter-level if available
+                    CurrentTag(),
                     attribute='lang',
                 ),
                 XML( # look for section-level code
-                    {'name': 'div', 'attrs': {'type': 'section'}},
+                    Tag('div', type='section'),
                     attribute='lang'
                 ),
                 XML( #otherwise, get the (first) language for the book
-                    'language',
+                    Tag('language'),
                     attribute='id',
                     toplevel=True,
-                    recursive=True,
                 ),
                 transform=utils.single_language_code,
             ),
@@ -322,13 +323,11 @@ class DBNL(XMLCorpusDefinition):
         display_name='Chapter',
         extractor=Backup(
             XML(
-                tag='head',
-                recursive=True,
+                Tag('head'),
                 flatten=True,
             ),
             XML(
-                tag=utils.LINE_TAG,
-                recursive=True,
+                Tag(utils.LINE_TAG),
                 flatten=True,
             )
         ),
@@ -359,11 +358,11 @@ class DBNL(XMLCorpusDefinition):
         search_field_core=True,
         csv_core=True,
         extractor=XML(
-            tag=utils.LINE_TAG,
-            recursive=True,
+            Tag(utils.LINE_TAG),
+            TransformTag(utils.pad_content),
             multiple=True,
             flatten=True,
-            transform_soup_func=utils.pad_content,
+            transform=lambda lines: '\n'.join(lines).strip() if lines else None,
         ),
         es_mapping=main_content_mapping(token_counts=True),
         visualizations=['wordcloud'],

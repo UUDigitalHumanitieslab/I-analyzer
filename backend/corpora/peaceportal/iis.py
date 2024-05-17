@@ -1,10 +1,11 @@
 from copy import copy
 from os.path import join, split
-
+from ianalyzer_readers.xml_tag import Tag
+from typing import Optional
 from django.conf import settings
 
 from addcorpus.python_corpora.corpus import XMLCorpusDefinition
-from addcorpus.python_corpora.extract import Combined, Constant, ExternalFile, FilterAttribute, XML
+from addcorpus.python_corpora.extract import Combined, Constant, ExternalFile, XML
 from addcorpus.serializers import LanguageField
 from corpora.peaceportal.peaceportal import PeacePortal, categorize_material, clean_newline_characters, \
     clean_commentary, join_commentaries, get_text_in_language, \
@@ -29,19 +30,15 @@ class PeaceportalIIS(PeacePortal, XMLCorpusDefinition):
         )
 
         self._id.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc',
-                 'msDesc', 'msIdentifier', 'idno'],
-            multiple=False,
-            toplevel=False,
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('msIdentifier'), Tag('idno'),
             flatten=True,
             transform=lambda x: ''.join(x.lower().split())
         )
 
-        self.url.extractor = FilterAttribute(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc',
-                 'msDesc', 'msIdentifier', 'idno'],
-            multiple=False,
-            toplevel=False,
+        self.url.extractor = XML(
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('msIdentifier'), Tag('idno'),
             flatten=True,
             transform=lambda x: 'https://library.brown.edu/iip/viewinscr/{}'.format(
                 ''.join(x.lower().split()))
@@ -49,10 +46,9 @@ class PeaceportalIIS(PeacePortal, XMLCorpusDefinition):
 
         # quick and dirty for now: extract value for 'notBefore'
         self.year.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-                 'history', 'origin', 'date'],
-            toplevel=False,
-            attribute='notBefore'
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('history'), Tag('origin'), Tag('date'),
+            attribute='notBefore',
         )
 
         self.not_before.extractor = not_before_extractor()
@@ -66,19 +62,13 @@ class PeaceportalIIS(PeacePortal, XMLCorpusDefinition):
         )
 
         self.transcription.extractor = ExternalFile(
-            stream_handler=extract_transcript
+            stream_handler=_extract_transcript
         )
 
-        self.transcription_english.extractor = FilterAttribute(
-            tag=['div'],
+        self.transcription_english.extractor = XML(
+            Tag('div', type='translation'), Tag('p', limit=1),
             toplevel=True,
-            multiple=False,
             flatten=True,
-            attribute_filter={
-                'attribute': 'type',
-                'value': 'translation'
-            },
-            transform_soup_func=extract_paragraph,
             transform=lambda x: ' '.join(x.split()) if x else None
         )
 
@@ -92,11 +82,11 @@ class PeaceportalIIS(PeacePortal, XMLCorpusDefinition):
         # )
 
         self.iconography.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc',
-                 'msDesc', 'physDesc', 'decoDesc', 'decoNote'],
-            toplevel=False,
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('physDesc'), Tag('decoDesc'), Tag('decoNote'),
             multiple=True,
-            flatten=True
+            flatten=True,
+            transform='\n'.join,
         )
 
         # is not present in IIS data
@@ -109,147 +99,125 @@ class PeaceportalIIS(PeacePortal, XMLCorpusDefinition):
         )
 
         self.region.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-                 'history', 'origin', 'placeName', 'region'],
-            toplevel=False,
-            flatten=True
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('history'), Tag('origin'), Tag('placeName'), Tag('region'),
+            flatten=True,
         )
 
         self.settlement.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-                 'history', 'origin', 'placeName', 'settlement'],
-            toplevel=False,
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('history'), Tag('origin'), Tag('placeName'), Tag('settlement'),
             flatten=True
         )
 
         self.location_details.extractor = Combined(
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-                     'history', 'origin', 'placeName'],
-                toplevel=False,
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('history'), Tag('origin'), Tag('placeName'),
                 flatten=True
             ),
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-                     'history', 'origin', 'p'],
-                toplevel=False,
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('history'), Tag('origin'), Tag('p'),
                 flatten=True
             ),
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-                     'history', 'provenance'],
-                toplevel=False,
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('history'), Tag('provenance'),
                 flatten=True
             )
         )
 
         self.material.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'physDesc',
-                 'objectDesc', 'supportDesc'],
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('physDesc'), Tag('objectDesc'), Tag('supportDesc'),
             attribute='ana',
-            toplevel=False,
             flatten=True,
             transform=lambda x: categorize_material(x)
         )
 
         self.material_details.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'physDesc',
-                 'objectDesc', 'supportDesc'],
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('physDesc'), Tag('objectDesc'), Tag('supportDesc'),
             attribute='ana',
-            toplevel=False,
             flatten=True
         )
 
         self.language.extractor = Combined(
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'msContents',
-                     'textLang'],
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('msContents'), Tag('textLang'),
                 attribute='mainLang',
-                toplevel=False,
                 transform=lambda x: normalize_language(x)
             ),
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'msContents',
-                     'textLang'],
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('msContents'), Tag('textLang'),
                 attribute='otherLangs',
-                toplevel=False,
                 transform=lambda x: normalize_language(x)
             )
         )
         self.language_code.extractor = Combined(
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'msContents',
-                     'textLang'],
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('msContents'), Tag('textLang'),
                 attribute='mainLang',
-                toplevel=False
             ),
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'msContents',
-                     'textLang'],
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('msContents'), Tag('textLang'),
                 attribute='otherLangs',
-                toplevel=False
             )
         )
 
         self.comments.extractor = Combined(
             XML(
-                tag=['text'],
-                toplevel=False,
-                multiple=False,
+                Tag('text'), Tag('div', type='commentary'), Tag('p', limit=1),
                 flatten=True,
-                transform_soup_func=extract_comments,
                 transform=lambda x: clean_commentary(x) if x else None
             ),
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'physDesc',
-                     'objectDesc', 'supportDesc', 'condition'],
-                toplevel=False,
-                transform_soup_func=extract_condition
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('physDesc'), Tag('objectDesc'), Tag('supportDesc'), Tag('condition'),
+                extract_soup_func=_extract_condition,
             ),
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'physDesc',
-                     'objectDesc', 'layoutDesc', 'layout', 'p'],
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('physDesc'), Tag('objectDesc'), Tag('layoutDesc'), Tag('layout'), Tag('p'),
                 toplevel=False,
-                transform=lambda x: 'LAYOUT:\n{}\n\n'.format(
-                    clean_commentary(x)) if x else None
+                transform=lambda x: f'LAYOUT:\n{clean_commentary(x)}\n\n' if x else None
             ),
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'physDesc',
-                     'objectDesc'],
-                toplevel=False,
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('physDesc'), Tag('objectDesc'),
                 attribute='ana',
-                transform=lambda x: 'OBJECTTYPE:\n{}\n\n'.format(
-                    x[1:]) if x else None
+                transform=lambda x: f'OBJECTTYPE:\n{x[1:]}\n\n' if x else None
             ),
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'physDesc',
-                     'objectDesc', 'supportDesc', 'support', 'dimensions'],
-                toplevel=False,
-                transform_soup_func=extract_dimensions,
-                transform=lambda x: 'DIMENSIONS:\n{}\n\n'.format(
-                    x) if x else None
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('physDesc'), Tag('objectDesc'), Tag('supportDesc'), Tag('support'),
+                Tag('dimensions'),
+                extract_soup_func=_extract_dimensions,
+                transform=lambda x: f'DIMENSIONS:\n{x}\n\n' if x else None
             ),
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'physDesc',
-                     'objectDesc', 'supportDesc', 'support', 'p'],
-                toplevel=False,
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('physDesc'), Tag('objectDesc'), Tag('supportDesc'), Tag('support'),
+                Tag('p'),
                 flatten=True,
-                transform=lambda x: 'SUPPORT:\n{}\n\n'.format(
-                    clean_commentary(x)) if x else None
+                transform=lambda x: f'SUPPORT:\n{clean_commentary(x)}\n\n' if x else None
             ),
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc',
-                     'msDesc', 'physDesc', 'handDesc', 'handNote'],
-                toplevel=False,
-                transform_soup_func=extract_handnotes
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('physDesc'), Tag('handDesc'), Tag('handNote'),
+                extract_soup_func=_extract_handnotes
             ),
             transform=lambda x: join_commentaries(x)
         )
 
         self.bibliography.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-                 'msIdentifier', 'publications', 'publication'],
-            toplevel=False,
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('msIdentifier'), Tag('publications'), Tag('publication'),
             multiple=True
         )
 
@@ -274,7 +242,7 @@ class PeaceportalIIS(PeacePortal, XMLCorpusDefinition):
         self.fields = exclude_fields_without_extractor(self.fields)
 
 
-def extract_transcript(filestream):
+def _extract_transcript(filestream):
     text = filestream.read().strip()
     filestream.close()
     # remove the tabs and spaces inherited from xml
@@ -284,31 +252,11 @@ def extract_transcript(filestream):
     return text
 
 
-def extract_paragraph(soup):
-    '''
-    Extract first <p> element from `soup`, ignore the rest.
-    Ideal for ignoring <h2> headers in the HTML versions of the body.
-    '''
-    if not soup:
-        return
-    return soup.find('p')
-
-
-def extract_comments(soup):
-    '''
-    Helper function to extract the commentary from either <body> or <back> (siblings under <text>)
-    '''
-    if not soup:
-        return
-    commentary_div = soup.find('div', {'type': 'commentary'})
-    return extract_paragraph(commentary_div)
-
-
-def extract_attribute_and_child_p(soup, field_header):
+def _extract_attribute_and_child_p(soup, field_header) -> Optional[str]:
     '''
     Extract value for 'ana' attribute from soup,
     as well as the text from a <p> child. Will be returned
-    in a new soup, i.e. a single element with text content
+    in as a string
     in the following format `textcontent (attrivubtevalue)`
     '''
     result = ''
@@ -316,7 +264,7 @@ def extract_attribute_and_child_p(soup, field_header):
     ana = None
     if 'ana' in soup.attrs:
         ana = soup['ana']
-    p = extract_paragraph(soup)
+    p = soup.find('p')
     if p:
         text = p.get_text()
         if text:
@@ -327,21 +275,18 @@ def extract_attribute_and_child_p(soup, field_header):
     if result:
         cloned_soup = copy(soup)
         cloned_soup.clear()
-        cloned_soup.string = '{}:\n{}\n\n'.format(field_header, result)
-        return cloned_soup
+        return '{}:\n{}\n\n'.format(field_header, result)
 
 
-def extract_condition(soup):
-    return extract_attribute_and_child_p(soup, 'CONDITION')
+def _extract_condition(soup):
+    return _extract_attribute_and_child_p(soup, 'CONDITION')
 
 
-def extract_handnotes(soup):
-    if not soup:
-        return
-    return extract_attribute_and_child_p(soup, 'HANDNOTES')
+def _extract_handnotes(soup):
+    return _extract_attribute_and_child_p(soup, 'HANDNOTES')
 
 
-def extract_dimensions(soup):
+def _extract_dimensions(soup) -> str:
     result = ''
     height_elem = soup.find('height')
     if height_elem:
@@ -361,10 +306,7 @@ def extract_dimensions(soup):
         if depth:
             result = "{} D: {}".format(result, depth)
 
-    cloned_soup = copy(soup)
-    cloned_soup.clear()
-    cloned_soup.string = result
-    return cloned_soup
+    return result
 
 
 def normalize_language(text):
@@ -381,9 +323,8 @@ def normalize_language(text):
 def not_after_extractor():
     ''' iis misses the enclosing <origDate> tag '''
     return XML(
-        tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-             'history', 'origin', 'date'],
-        toplevel=False,
+        Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+        Tag('history'), Tag('origin'), Tag('date'),
         attribute='notAfter',
         transform=lambda x: transform_to_date(x, 'upper')
     )
@@ -392,9 +333,8 @@ def not_after_extractor():
 def not_before_extractor():
     ''' iis misses the enclosing <origDate> tag '''
     return XML(
-        tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-             'history', 'origin', 'date'],
-        toplevel=False,
+        Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+        Tag('history'), Tag('origin'), Tag('date'),
         attribute='notBefore',
         transform=lambda x: transform_to_date(x, 'lower')
     )

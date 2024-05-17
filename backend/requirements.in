@@ -30,6 +30,6 @@ tqdm
 langcodes
 language_data
 flower
-ianalyzer_readers
+ianalyzer_readers @ git+https://github.com/UUDigitalHumanitieslab/ianalyzer-readers@21b78dc8
 jsonschema
 Pillow

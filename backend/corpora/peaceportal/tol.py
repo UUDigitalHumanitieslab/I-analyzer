@@ -1,10 +1,12 @@
 import re
 from copy import copy
-
+from ianalyzer_readers.xml_tag import Tag, TransformTag
+from typing import Optional
+import bs4
 from django.conf import settings
 
 from addcorpus.python_corpora.corpus import XMLCorpusDefinition
-from addcorpus.python_corpora.extract import XML, Constant, Combined, FilterAttribute
+from addcorpus.python_corpora.extract import XML, Constant, Combined
 from corpora.peaceportal.peaceportal import PeacePortal, categorize_material, \
     clean_newline_characters, clean_commentary, join_commentaries, get_text_in_language, \
     transform_to_date_range, not_before_extractor, not_after_extractor
@@ -24,28 +26,19 @@ class PeaceportalTOL(PeacePortal, XMLCorpusDefinition):
         )
 
         self._id.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc',
-                 'msDesc', 'msIdentifier', 'idno'],
-            multiple=False,
-            toplevel=False,
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'),
+            Tag('msDesc'), Tag('msIdentifier'), Tag('idno'),
             flatten=True
         )
 
-        self.url.extractor = FilterAttribute(
-            tag=['teiHeader', 'fileDesc', 'publicationStmt', 'idno'],
-            multiple=False,
-            toplevel=False,
+        self.url.extractor = XML(
+            Tag('teiHeader'), Tag('fileDesc'), Tag('publicationStmt'), Tag('idno', type='url'),
             flatten=True,
-            attribute_filter={
-                'attribute': 'type',
-                'value': 'url'
-            }
         )
 
         self.year.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-                 'history', 'origin', 'origDate', 'date'],
-            toplevel=False,
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('history'), Tag('origin'), Tag('origDate'), Tag('date'),
             transform=lambda x: get_year(x),
         )
 
@@ -55,147 +48,136 @@ class PeaceportalTOL(PeacePortal, XMLCorpusDefinition):
         self.date.extractor = Combined(
             not_before_extractor(),
             not_after_extractor(),
-            transform=transform_to_date_range
+            transform=lambda dates: transform_to_date_range(*dates),
         )
 
         self.transcription.extractor = XML(
-            tag=['text', 'body', 'div'],
-            toplevel=False,
-            multiple=False,
+            Tag('text'), Tag('body'), Tag('div', type='edition'),
+            Tag('ab'),
             flatten=True,
             transform=lambda x: clean_newline_characters(x),
-            transform_soup_func=extract_transcript
         )
 
         self.names.extractor = XML(
-            tag=['teiHeader', 'profileDesc',
-                 'particDesc', 'listPerson', 'person'],
+            Tag('teiHeader'), Tag('profileDesc'),
+            Tag('particDesc'), Tag('listPerson'), Tag('person'),
             flatten=True,
             multiple=True,
-            toplevel=False,
+            transform=lambda names: ' '.join if names else None,
         )
 
         self.sex.extractor = XML(
-            tag=['teiHeader', 'profileDesc',
-                 'particDesc', 'listPerson', 'person'],
+            Tag('teiHeader'), Tag('profileDesc'),
+            Tag('particDesc'), Tag('listPerson'), Tag('person'),
             attribute='sex',
             multiple=True,
-            toplevel=False,
             transform=lambda x: convert_sex(x)
         )
 
         self.dates_of_death.extractor = XML(
-            tag=['teiHeader', 'profileDesc',
-                 'particDesc', 'listPerson'],
-            transform_soup_func=extract_death,
+            Tag('teiHeader'), Tag('profileDesc'),
+            Tag('particDesc'), Tag('listPerson'),
+            Tag('death'),
+            multiple=True,
             attribute='when',
-            multiple=False,
-            toplevel=False,
+            transform=lambda x: x if x else None
         )
 
         self.country.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-                 'history', 'origin', 'origPlace', 'country'],
-            toplevel=False,
-            transform_soup_func=extract_country,
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('history'), Tag('origin'), Tag('origPlace'), Tag('country'),
+            TransformTag(extract_country),
             transform=lambda x: clean_country(x),
             flatten=True,
         )
 
         self.region.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-                 'history', 'origin', 'origPlace', 'country', 'region'],
-            toplevel=False,
+            Tag('teiHeader'), Tag('sourceDesc'), Tag('fileDesc'), Tag('msDesc'),
+            Tag('history'), Tag('origin'), Tag('origPlace'), Tag('country'), Tag('region'),
             flatten=True
         )
 
         self.settlement.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-                 'history', 'origin', 'origPlace', 'settlement'],
-            toplevel=False,
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('history'), Tag('origin'), Tag('origPlace'), Tag('settlement'),
+            TransformTag(extract_settlement),
             flatten=True,
-            transform_soup_func=extract_settlement,
         )
 
         self.location_details.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-                 'history', 'origin', 'origPlace', 'settlement', 'geogName'],
-            toplevel=False,
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('history'), Tag('origin'), Tag('origPlace'), Tag('settlement'),
+            Tag('geogName'), TransformTag(extract_location_details),
             flatten=True,
-            transform_soup_func=extract_location_details,
         )
 
         self.material.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'physDesc',
-                 'objectDesc', 'supportDesc', 'support', 'p', 'material'],
-            toplevel=False,
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('physDesc'), Tag('objectDesc'), Tag('supportDesc'), Tag('support'),
+            Tag('p'), Tag('material'),
             flatten=True,
             transform=lambda x: categorize_material(x)
         )
 
         self.material_details.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'physDesc',
-                 'objectDesc', 'supportDesc', 'support', 'p', 'material'],
-            toplevel=False,
-            flatten=True
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('physDesc'), Tag('objectDesc'), Tag('supportDesc'), Tag('support'),
+            Tag('p'), Tag('material'),
+            flatten=True,
         )
 
         self.language.extractor = XML(
-            tag=['teiHeader', 'profileDesc', 'langUsage', 'language'],
-            toplevel=False,
+            Tag('teiHeader'), Tag('profileDesc'), Tag('langUsage'), Tag('language'),
             multiple=True,
             transform=lambda x: get_language(x)
         )
 
         self.comments.extractor = Combined(
             XML(
-                tag=['text', 'body'],
-                toplevel=False,
-                transform_soup_func=extract_commentary,
+                Tag('text'), Tag('body'), Tag('div', type='commentary'),
+                multiple=True,
+                extract_soup_func=_extract_commentary,
+                transform=lambda x: '\n'.join(filter(None, x)) if x else None
             ),
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'physDesc',
-                     'objectDesc', 'supportDesc', 'condition'],
-                toplevel=False,
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('physDesc'), Tag('objectDesc'), Tag('supportDesc'), Tag('condition'),
                 flatten=True,
-                transform=lambda x: 'CONDITION:\n{}\n'.format(x) if x else x
+                transform=lambda x: f'CONDITION:\n{x}\n' if x else x
             ),
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'physDesc',
-                     'objectDesc', 'supportDesc', 'support', 'p'],
-                toplevel=False,
-                transform_soup_func=extract_support_comments,
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('physDesc'), Tag('objectDesc'), Tag('supportDesc'), Tag('support'),
+                Tag('p'),
+                extract_soup_func=_extract_support_comments,
             ),
             transform=lambda x: join_commentaries(x)
         )
 
         self.images.extractor = XML(
-            tag=['facsimile', 'graphic'],
+            Tag('facsimile'), Tag('graphic'),
             multiple=True,
             attribute='url',
-            toplevel=False
+            transform=lambda x: x if x else None
         )
 
         self.coordinates.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-                 'history', 'origin', 'origPlace', 'settlement', 'geogName', 'geo'],
-            toplevel=False,
-            multiple=False,
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('history'), Tag('origin'), Tag('origPlace'), Tag('settlement'),
+            Tag('geogName'), Tag('geo'),
             flatten=True
         )
 
         self.iconography.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc',
-                 'msDesc', 'physDesc', 'decoDesc', 'decoNote'],
-            toplevel=False,
-            multiple=False
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('physDesc'), Tag('decoDesc'), Tag('decoNote'),
         )
 
         self.bibliography.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc',
-                 'msIdentifier', 'publications', 'publication'],
-            toplevel=False,
-            multiple=True
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('msIdentifier'), Tag('publications'), Tag('publication'),
+            multiple=True,
+            transform=lambda x: x if x else None
         )
 
         self.transcription_hebrew.extractor = Combined(
@@ -257,24 +239,10 @@ def get_language(values):
     return values
 
 
-def extract_transcript(soup):
-    '''
-    Helper function to ensure correct extraction of the transcripts.
-    Note that there are multiple formats in which these are stored,
-    but the text that we need is always in the `<ab>` children of
-    `['text', 'body', 'div']` (where div has `type=edition`, this is always the first one).
-    '''
-    if not soup:
-        return
-    return soup.find_all('ab')
-
-
 def extract_translation(soup):
     '''
     Helper function to extract translation from the <body> tag
     '''
-    if not soup:
-        return
     translation = soup.find('div', {'type': 'translation'})
     if translation:
         return translation.find_all('ab')
@@ -282,43 +250,25 @@ def extract_translation(soup):
         return
 
 
-def extract_commentary(soup):
+def _extract_commentary(commentary: bs4.PageElement) -> Optional[str]:
     '''
-    Helper function to extract all commentaries from the <body> tag.
+    Helper function to extract all commentaries from <div type="commentary" tags.
     A single element will be returned with the commentaries found as text content.
     '''
-    if not soup:
-        return
-    found = []
-    commentaries = soup.find_all('div', {'type': 'commentary'})
 
-    for commentary in commentaries:
-        if commentary['subtype'] in ['Zitate', 'Zeilenkommentar', 'Prosopographie', 'Abkürzung', 'Endkommentar', 'Stilmittel']:
-            p = commentary.find('p')
-            if p:
-                text = p.get_text()
-                if text:
-                    text = clean_commentary(text)
-                    found.append('{}:\n{}\n'.format(
-                        commentary['subtype'].strip().upper(), text))
-
-    if len(found) > 1:
-        cloned_soup = copy(soup)
-        cloned_soup.clear()
-        cloned_soup.string = "\n".join(found)
-        return cloned_soup
-    else:
-        return None
+    if commentary['subtype'] in ['Zitate', 'Zeilenkommentar', 'Prosopographie', 'Abkürzung', 'Endkommentar', 'Stilmittel']:
+        p = commentary.find('p')
+        if p:
+            text = p.get_text()
+            if text:
+                subtype = commentary['subtype']
+                text = clean_commentary(text)
+                return f'{subtype}:\n{text}\n'
 
 
-def extract_support_comments(soup):
-    if not soup:
-        return
-    cloned_soup = copy(soup)
-    cloned_soup.clear()
-
-    commentaries = add_support_comment(soup, '', 'dim', 'DIMENSIONS')
-    commentaries = add_support_comment(
+def _extract_support_comments(soup: bs4.PageElement) -> str:
+    commentaries = _add_support_comment(soup, '', 'dim', 'DIMENSIONS')
+    commentaries = _add_support_comment(
         soup, commentaries, 'objectType', 'OBJECTTYPE')
 
     # add any additional text from the <p> element,
@@ -327,13 +277,12 @@ def extract_support_comments(soup):
     text = contents[len(contents) - 1].strip()
     if text:
         text = clean_commentary(text)
-        commentaries = '{}{}:\n{}\n'.format(commentaries, 'SUPPORT', text)
+        commentaries = f'{commentaries}SUPPORT:\n{text}\n'
 
-    cloned_soup.string = commentaries
-    return cloned_soup
+    return commentaries
 
 
-def add_support_comment(soup, existing_commentaries, elem_name, commentary_name):
+def _add_support_comment(soup: bs4.PageElement, existing_commentaries: str, elem_name, commentary_name) -> str:
     elem = soup.find(elem_name)
     if elem:
         text = elem.get_text()
@@ -341,15 +290,6 @@ def add_support_comment(soup, existing_commentaries, elem_name, commentary_name)
             text = clean_commentary(text)
             return '{}{}:\n{}\n\n'.format(existing_commentaries, commentary_name, text)
     return existing_commentaries
-
-
-def extract_death(soup):
-    '''
-    Helper function to extract date of death from multiple person tags.
-    '''
-    if not soup:
-        return
-    return soup.find_all('death')
 
 
 def extract_country(soup):
@@ -375,13 +315,11 @@ def clone_soup_extract_child(soup, to_extract):
     This is useful when the output of `flatten` would otherwise include the text contents
     of the child.
     '''
-    if not soup:
-        return
     cloned_soup = copy(soup)
     child = cloned_soup.find(to_extract)
     if child:
-        child.extract()
-    return cloned_soup
+        [child.extract()]
+    return [cloned_soup]
 
     # TODO: add field
 

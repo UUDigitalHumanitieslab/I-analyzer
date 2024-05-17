@@ -2,6 +2,7 @@ import re
 import os
 import os.path as op
 import logging
+from ianalyzer_readers.xml_tag import Tag
 
 from django.conf import settings
 
@@ -46,8 +47,7 @@ class PeaceportalFIJI(PeacePortal, XMLCorpusDefinition):
         )
 
         self._id.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'titleStmt', 'title'],
-            toplevel=False,
+            Tag('teiHeader'), Tag('fileDesc'), Tag('titleStmt'), Tag('title'),
         )
 
         self.url.extractor = Constant(
@@ -63,30 +63,27 @@ class PeaceportalFIJI(PeacePortal, XMLCorpusDefinition):
         # )
 
         self.transcription.extractor = XML(
-            tag=['text', 'body', 'transcription'],
-            toplevel=False,
+            Tag('text'), Tag('body'), Tag('transcription'),
             flatten=True
         )
 
         self.names.extractor = XML(
-            tag=['teiHeader', 'profileDesc',
-                 'particDesc', 'listPerson', 'person'],
+            Tag('teiHeader'), Tag('profileDesc'), Tag('particDesc'), Tag('listPerson'),
+            Tag('person'),
             flatten=True,
             multiple=True,
-            toplevel=False,
+            transform=lambda result: ' '.join(result).strip(),
         )
 
         self.sex.extractor = XML(
-            tag=['teiHeader', 'profileDesc',
-                 'particDesc', 'listPerson', 'person'],
+            Tag('teiHeader'), Tag('profileDesc'), Tag('particDesc'), Tag('listPerson'),
+            Tag('person'),
             attribute='sex',
             multiple=True,
-            toplevel=False,
         )
 
         self.age.extractor = XML(
-            tag=['text', 'body', 'age'],
-            toplevel=False,
+            Tag('text'), Tag('body'), Tag('age'),
             transform=lambda age: transform_age_integer(age)
         )
 
@@ -95,47 +92,41 @@ class PeaceportalFIJI(PeacePortal, XMLCorpusDefinition):
         )
 
         self.settlement.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc',
-                 'msDesc', 'history', 'origin', 'provenance'],
-            toplevel=False,
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('history'), Tag('origin'), Tag('provenance'),
         )
 
         self.material.extractor = XML(
-            tag=['text', 'body', 'material'],
-            toplevel=False,
+            Tag('text'), Tag('body'), Tag('material'),
             transform=lambda x: categorize_material(x)
         )
 
         self.material_details = XML(
-            tag=['text', 'body', 'material'],
-            toplevel=False,
+            Tag('text'), Tag('body'), Tag('material'),
         )
 
         self.language.extractor = XML(
-            tag=['teiHeader', 'profileDesc', 'langUsage', 'language'],
-            toplevel=False,
+            Tag('teiHeader'), Tag('profileDesc'), Tag('langUsage'), Tag('language'),
             multiple=True,
             transform=lambda x: normalize_language(x)
         )
 
         self.comments.extractor = Combined(
             XML(
-                tag=['text', 'body', 'commentary'],
-                toplevel=False,
+                Tag('text'), Tag('body'), Tag('commentary'),
+                transform=str.strip,
             ),
             XML(
-                tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'history', 'origin', 'remarksOnDate'],
-                toplevel=False,
+                Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+                Tag('history'), Tag('origin'), Tag('remarksOnDate'),
                 transform=lambda x: 'DATE:\n{}\n'.format(x) if x else x
             ),
             XML(
-                tag=['text', 'body', 'ageComments'],
-                toplevel=False,
+                Tag('text'), Tag('body'), Tag('ageComments'),
                 transform=lambda x: 'AGE:\n{}\n'.format(x) if x else x
             ),
             XML(
-                tag=['text', 'body', 'iconographyDescription'],
-                toplevel=False,
+                Tag('text'), Tag('body'), Tag('iconographyDescription'),
                 transform=lambda x: 'ICONOGRAPHY:\n{}\n'.format(x) if x else x
             ),
             transform=lambda x: join_commentaries(x)
@@ -143,19 +134,18 @@ class PeaceportalFIJI(PeacePortal, XMLCorpusDefinition):
 
 
         self.bibliography.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'msIdentifier', 'publications', 'publication'],
-            toplevel=False,
-            multiple=True
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('msIdentifier'), Tag('publications'), Tag('publication'),
+            multiple=True,
         )
 
         self.location_details.extractor = XML(
-            tag=['teiHeader', 'fileDesc', 'sourceDesc', 'msDesc', 'msIdentifier', 'location'],
-            toplevel=False
+            Tag('teiHeader'), Tag('fileDesc'), Tag('sourceDesc'), Tag('msDesc'),
+            Tag('msIdentifier'), Tag('location'),
         )
 
         self.iconography.extractor = XML(
-            tag=['text', 'body', 'iconographyType'],
-            toplevel=False
+            Tag('text'), Tag('body'), Tag('iconographyType'),
         )
 
         self.transcription_hebrew.extractor = Combined(

@@ -7,6 +7,7 @@ from os.path import join, isfile, split, splitext
 from datetime import datetime
 import logging
 import re
+from ianalyzer_readers.xml_tag import Tag
 
 from django.conf import settings
 
@@ -37,8 +38,8 @@ class Ecco(XMLCorpusDefinition):
     languages = ['en', 'fr', 'la', 'grc', 'de',  'it', 'cy', 'ga', 'gd']
     category = 'book'
 
-    tag_toplevel = 'pageContent'
-    tag_entry = 'page'
+    tag_toplevel = Tag('pageContent')
+    tag_entry = Tag('page')
 
     meta_pattern = re.compile('^\d+\_DocMetadata\.xml$')
 
@@ -153,8 +154,7 @@ class Ecco(XMLCorpusDefinition):
                 description='Text content.',
                 results_overview=True,
                 search_field_core=True,
-                extractor=XML(tag='ocrText',
-                              flatten=True),
+                extractor=XML(Tag('ocrText'), flatten=True),
                 visualizations=['wordcloud']
             ),
             FieldDefinition(
