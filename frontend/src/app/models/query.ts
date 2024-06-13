@@ -6,7 +6,7 @@ import { EsQuery } from '../models';
 import { combineSearchClauseAndFilters,  } from '../utils/es-query';
 import {
     omitNullParameters, queryFiltersToParams,
-    queryFromParams, searchFieldsFromParams
+    queryFromParams, queryToParams, searchFieldsFromParams
 } from '../utils/params';
 import { isFieldFilter, SearchFilter } from './field-filter';
 import { isTagFilter, TagFilter } from './tag-filter';
@@ -187,7 +187,7 @@ export class QueryModel extends StoreSync<QueryState> {
     }
 
     protected stateToStore(state: QueryState): Params {
-        const queryTextParams =  { query: state.queryText || null };
+        const queryTextParams =  queryToParams(state.queryText);
         const searchFieldsParams = { fields: state.searchFields?.map(f => f.name).join(',') || null};
 
         return {
