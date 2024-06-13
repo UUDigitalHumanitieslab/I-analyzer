@@ -38,6 +38,7 @@ class Times(XMLCorpusDefinition):
     citation_page = 'citation.md'
     languages = ['en']
     category = 'periodical'
+    word_model_path = getattr(settings, 'TIMES_WM', None)
 
     @property
     def es_settings(self):
