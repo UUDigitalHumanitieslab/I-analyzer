@@ -90,7 +90,7 @@ django-livereload-server==0.4
     # via -r requirements.in
 django-revproxy @ git+https://github.com/jazzband/django-revproxy.git@1defbb2dad5c0632391d54bcd3dbdaeabf46266a
     # via -r requirements.in
-djangorestframework==3.14.0
+djangorestframework==3.15.2
     # via
     #   -r requirements.in
     #   dj-rest-auth
@@ -297,7 +297,6 @@ python3-openid==3.2.0
     # via django-allauth
 pytz==2023.3
     # via
-    #   djangorestframework
     #   flower
     #   pandas
     #   pysaml2
