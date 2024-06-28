@@ -48,9 +48,8 @@ class JewishMigration(PeacePortal, JSONCorpusDefinition):
     min_date = datetime(year=1, month=1, day=1)
     max_date = datetime(year=1800, month=12, day=31)
 
-    data_directory = getattr(settings, 'JMIG_DATA')
-    data_url = getattr(settings, 'JMIG_DATA_URL',
-                       'localhost:8100/api/records/')
+    data_directory = getattr(settings, 'JMIG_DATA', None)
+    data_url = getattr(settings, 'JMIG_DATA_URL', None)
 
     es_index = getattr(settings, 'JMIG_INDEX', 'jewishmigration')
     image = 'jewish_inscriptions.jpg'
