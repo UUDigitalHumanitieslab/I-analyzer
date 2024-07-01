@@ -9,7 +9,7 @@
                             <ia-search-relevance [value]="document.relevance"></ia-search-relevance>
                         </td>
                     </tr>
-                    <tr *ngIf="(document?.tags$ | async) as tags">
+                    <tr *ngIf="(document.tags$ | async) as tags">
                         <th>Your tags</th>
                         <td>
                             <ia-document-tags [document]="document" [tags]="tags"></ia-document-tags>
@@ -21,9 +21,9 @@
                             <td *ngIf="!isUrlField(field) && !isGeoPointField(field)"
                                 data-test-field-value
                                 [attr.lang]="document.language(field)"
-                                [innerHtml]="formatInnerHtml(field)">
+                                [innerHtml]="field | elasticsearchHighlight:document | paragraph">
                             </td>
-                            <td *ngIf="isGeoPointField(field)">{{displayGeoPointField(field)}}</td>
+                            <td *ngIf="isGeoPointField(field)">{{field | geoData:document}}</td>
                             <td *ngIf="isUrlField(field)">
                                 <a href={{document.fieldValue(field)}} target="_blank">{{document.fieldValue(field)}}</a>
                             </td>
@@ -38,10 +38,30 @@
         <div class="box">
             <ia-tabs [activeTab]="activeTab">
                 <ng-template iaTabPanel *ngFor="let field of contentFields" [id]="field.name" [title]="field.displayName" [icon]="documentIcons.text">
-                    <div class="content"
-                        [attr.lang]="document.language(field)"
-                        [innerHtml]="formatInnerHtml(field)">
+                    <div *ngIf="showEntities && document.entityAnnotations$ | async as annotations ; else showHighlights" class="content"
+                        [attr.lang]="document.language(field)">
+                        <div *ngIf="annotations[field.name]; else plainText">
+                            <span *ngFor="let textSegment of annotations[field.name]">
+                                <mark *ngIf="textSegment.entity !== 'flat'; else unannotatedText" [className]="'entity-'+textSegment.entity">
+                                    {{textSegment.text}}
+                                    <fa-icon class="entity-icon" [icon]="entityIcons[textSegment.entity]" [title]="textSegment.entity"></fa-icon>
+                                </mark>
+                                <ng-template #unannotatedText>
+                                    {{textSegment.text | paragraph}}
+                                </ng-template>
+                            </span>
+                        </div>
+                        <ng-template #plainText>
+                            <div [innerHtml]="document.fieldValues[field.name] | paragraph"></div>
+                        </ng-template>
+                        <ia-entity-legend *ngIf="showEntities" [entityAnnotations]="annotations[field.name]"></ia-entity-legend>
                     </div>
+                    <ng-template #showHighlights>
+                        <div class="content"
+                            [attr.lang]="document.language(field)"
+                            [innerHtml]="field | elasticsearchHighlight:document | paragraph">
+                        </div>
+                    </ng-template>
                 </ng-template>
                 <ng-template iaTabPanel id="scan" *ngIf="showScanTab" title="Image" [icon]="documentIcons.scan">
                     <ia-image-view [corpus]="corpus" [document]="document"></ia-image-view>

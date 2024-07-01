@@ -15,7 +15,7 @@
                 <ng-template #unhighlightedRow>
                     <td style="word-break:break-word"
                         [attr.lang]="document.language(field)"
-                        [innerHtml]="document.fieldValue(field) | highlight:query:true">
+                        [innerHtml]="document.fieldValue(field) | snippet">
                     </td>
                 </ng-template>
             </tr>

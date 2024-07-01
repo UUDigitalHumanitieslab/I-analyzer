@@ -3,8 +3,6 @@ import { TestBed, inject } from '@angular/core/testing';
 import { ApiService } from './api.service';
 import { ApiServiceMock } from '../../mock-data/api';
 import { DownloadService } from './download.service';
-import { ElasticSearchService } from './elastic-search.service';
-import { ElasticSearchServiceMock } from '../../mock-data/elastic-search';
 import { mockCorpus, mockField } from '../../mock-data/corpus';
 import { DownloadOptions, LimitedResultsDownloadParameters, QueryModel, SortState } from '../models';
 

@@ -30,6 +30,11 @@ $section-padding:	3rem 1.5rem;
 $boxShadow: 0 2px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px rgba(10, 10, 10, 0.1);
 $boxShadowHover: 0px 5px 3px rgba(10, 10, 10, 0.1), 0 0 0 1px $primary;
 
+$entity-person:  #303F9F;
+$entity-location: #4e8f2d;
+$entity-organization: #efb71d;
+$entity-miscellaneous: #ee5986;
+
 @import "bulma/sass/utilities/_all";
 
 // based on the Bulma loader

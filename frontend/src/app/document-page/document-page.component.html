@@ -1,7 +1,8 @@
 <ia-corpus-header [corpus]="corpus" currentPage="document"></ia-corpus-header>
 <div class="section">
     <div class="container is-readable">
-        <div *ngIf="!documentNotFound; else notFound" [ngClass]="{'is-loading': !document}">
+        <div *ngIf="documentFound; else notFound" [ngClass]="{'is-loading': !document}">
+            <em *ngIf="showNEROption" iaBalloon="Show named entities for this document">Show named entities<ia-toggle (toggled)="toggleNER($event)"></ia-toggle></em>
             <div class="level">
                 <div class="level-left"></div>
                 <div class="level-right">
@@ -14,7 +15,7 @@
                 </div>
             </div>
             <div class="block">
-                <ia-document-view *ngIf="document" [document]="document" [corpus]="corpus"></ia-document-view>
+                <ia-document-view *ngIf="document" [document]="document" [corpus]="corpus" [showEntities]="showNamedEntities"></ia-document-view>
             </div>
         </div>
     </div>

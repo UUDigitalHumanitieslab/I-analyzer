@@ -71,3 +71,31 @@ a.dropdown-item[disabled] {
         color: $grey;
     }
 }
+
+@mixin mark-entity($color) {
+    background-color: rgb(from $color r g b /.2);
+    border-bottom: .2em solid;
+    border-color: $color;
+
+    .entity-icon, &.entity-icon {
+        padding-left: .3em;
+        padding-right: .3em;
+        color: $color;
+    }
+}
+
+.entity-person {
+    @include mark-entity($entity-person);
+}
+
+.entity-location {
+    @include mark-entity($entity-location);
+}
+
+.entity-organization {
+    @include mark-entity($entity-organization);
+}
+
+.entity-miscellaneous {
+    @include mark-entity($entity-miscellaneous);
+}

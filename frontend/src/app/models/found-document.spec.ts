@@ -1,13 +1,16 @@
-import { TestBed, waitForAsync } from '@angular/core/testing';
-import { makeDocument } from '../../mock-data/constructor-helpers';
-import { mockCorpus, mockCorpus3 } from '../../mock-data/corpus';
-import { FoundDocument } from './found-document';
-import { TagService } from '../services/tag.service';
-import { TagServiceMock, mockTags } from '../../mock-data/tag';
+import { TestBed, fakeAsync, waitForAsync } from '@angular/core/testing';
 import * as _ from 'lodash';
 import { reduce, take } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { makeDocument } from '../../mock-data/constructor-helpers';
+import { mockCorpus, mockCorpus3 } from '../../mock-data/corpus';
+import { EntityServiceMock } from '../../mock-data/entity';
+import { TagServiceMock, mockTags } from '../../mock-data/tag';
+import { FoundDocument } from './found-document';
+import { EntityService } from '../services/entity.service';
+import { TagService } from '../services/tag.service';
 import { Tag } from './tag';
+
 
 const maxScore = 2.9113607;
 const mockResponse = {
@@ -33,19 +36,20 @@ const mockResponse = {
 };
 
 describe('FoundDocument', () => {
-    let tagService: TagService;
+    const mockTagService = new TagServiceMock() as any;
+    const mockEntityService = new EntityServiceMock() as any;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
             providers: [
-                { provide: TagService, useValue: new TagServiceMock() }
+                { provide: TagService, useClass: TagServiceMock },
+                { provide: EntityService, useClass: EntityServiceMock }
             ]
         });
-        tagService = TestBed.inject(TagService);
     });
 
     it('should construct from an elasticsearch response', () => {
-        const document = new FoundDocument(tagService, mockCorpus, mockResponse, maxScore);
+        const document = new FoundDocument(mockTagService, mockEntityService, mockCorpus, mockResponse, maxScore);
 
         expect(document.id).toBe('1994_troonrede');
         expect(document.fieldValues['monarch']).toBe('Beatrix');
@@ -90,4 +94,5 @@ describe('FoundDocument', () => {
             ]);
         });
     }));
+
 });

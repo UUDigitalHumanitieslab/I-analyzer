@@ -1,24 +1,22 @@
 import { Pipe, PipeTransform, SecurityContext } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { HighlightService } from '../services/highlight.service';
+import { HighlightService } from '../../services/highlight.service';
 
 @Pipe({
-    name: 'highlight'
+    name: 'regexHighlight'
 })
-export class HighlightPipe implements PipeTransform {
+export class RegexHighlightPipe implements PipeTransform {
     constructor(private sanitizer: DomSanitizer, private highlightService: HighlightService) {
     }
 
     /**
      * Transforms a text to highlight all the text matching the specified query.
-     *
-     * @param snippets Only show snippets. When this enabled, line breaks will also be replaced with --
      */
-    transform(text: string, query: string, snippets: boolean = false) {
+    transform(text: string, query: string) {
         const highlights = this.highlightService.highlight(text, query);
-        const parts = snippets ? this.highlightService.snippets(highlights) : Array.from(highlights);
+        const parts = Array.from(highlights);
         const highlightedText = parts.map(part => {
-            const sanitizedText = this.sanitizedLineBreaks(part.substring, snippets ? ' &mdash; ' : '<br />');
+            const sanitizedText = this.sanitizedLineBreaks(part.substring, '<br />');
 
             return part.isHit ? `<span class="highlight">${sanitizedText}</span>` : sanitizedText;
         }).join('');

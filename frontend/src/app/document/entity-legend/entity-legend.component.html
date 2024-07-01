@@ -1,0 +1,13 @@
+<footer>
+    <ul *ngIf="entities; else noEntities" title="legend">
+        <li *ngFor="let entity of entities">
+            <span>
+                <fa-icon [className]="'entity-'+entity+' entity-icon'" [icon]="entityIcons[entity]" [title]="entity"></fa-icon>
+                {{entity.slice(0,1).toUpperCase() + entity.slice(1)}}
+            </span>
+        </li>
+    </ul>
+    <ng-template #noEntities>
+        <em class="no-entities-message">No named entities were found in this text.</em>
+    </ng-template>
+</footer>

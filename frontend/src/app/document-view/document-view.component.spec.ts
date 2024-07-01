@@ -20,10 +20,9 @@ describe('DocumentViewComponent', () => {
         fixture = TestBed.createComponent(DocumentViewComponent);
         component = fixture.componentInstance;
         component.corpus = _.merge({
-            scanImageType: 'farout_image_type',
-            fields: [mockField]
+            scanImageType: 'farout_image_type'
         }, mockCorpus);
-        component.document = makeDocument({ great_field: 'Hello world!' });
+        component.document = makeDocument({ great_field: 'Hello world!', speech: 'Wally was last seen in Paris' });
         fixture.detectChanges();
     });
 
@@ -31,11 +30,8 @@ describe('DocumentViewComponent', () => {
         expect(component).toBeTruthy();
     });
 
-    it('should render fields', async () => {
-        await fixture.whenStable();
-
+    it('should render fields', () => {
         expect(component.propertyFields).toEqual([mockField]);
-
         const debug = fixture.debugElement.queryAll(By.css('[data-test-field-value]'));
         expect(debug.length).toEqual(1); // number of fields
         const element = debug[0].nativeElement;
@@ -48,4 +44,12 @@ describe('DocumentViewComponent', () => {
         expect(debug[0].attributes['id']).toBe('tab-speech');
         expect(debug[1].attributes['id']).toBe('tab-scan');
     });
+
+    it('shows a named entity legend if showEntities is true', () => {
+        expect(fixture.debugElement.query(By.css('ia-entity-legend'))).toBeFalsy();
+        component.showEntities = true;
+        fixture.detectChanges();
+        expect(fixture.debugElement.query(By.css('ia-entity-legend'))).toBeTruthy();
+    });
+
 });

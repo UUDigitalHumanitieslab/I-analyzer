@@ -1,0 +1,68 @@
+@import "../../../_utilities";
+
+/* The switch - the box around the slider */
+.toggle-container {
+    position: absolute;
+    margin-left: .5rem;
+    margin-top: -.2rem;
+    display: inline-block;
+    width: 4rem;
+    height: 2rem;
+    pointer-events: none;
+
+    /* Hide default HTML checkbox */
+    input {
+        opacity: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: all;
+    }
+}
+
+
+/* The slider */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: $highlight-color;
+    transition: .4s;
+    border-radius: 35px;
+    pointer-events: none;
+    &:before {
+        content: "";
+        z-index: 20;
+        position: absolute;
+        height: 1.6rem;
+        width: 1.6rem;
+        left: .2rem;
+        bottom: .2rem;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+}
+
+
+
+input:checked {
+    + .slider {
+        background-color: $primary;
+    }
+
+    + .slider:before {
+        transform: translateX(2rem);
+        -webkit-transform: translateX(2rem);
+        -moz-transform: translateX(2rem);
+        -ms-transform: translateX(2rem);
+        -o-transform: translateX(2rem);
+    }
+    
+    + .slider:after {
+        left: calc(100% - 5px);
+        transform: translateX(-100%);
+    }
+}

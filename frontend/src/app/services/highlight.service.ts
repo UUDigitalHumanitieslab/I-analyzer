@@ -5,10 +5,7 @@ import { Injectable } from '@angular/core';
  * a more scalable approach would need to be implemented if rendering many hits is required.
  */
 const maxHits = 100;
-/**
- * The maximum number of snippets.
- */
-const maxSnippetsCount = 7;
+
 /**
  * The maximum character length of all the text snippets combined.
  */
@@ -52,7 +49,6 @@ export class HighlightService {
         }
 
         let result: RegExpExecArray;
-        const parsedText: TextPart[] = [];
         let lastIndex = 0;
 
         for (
@@ -76,39 +72,6 @@ export class HighlightService {
         if (text.length > lastIndex) {
             yield { substring: text.substring(lastIndex), isHit: false };
         }
-    }
-
-    /**
-     * Gets short snippets from the text part to give the user a short overview of the text content.
-     */
-    public snippets(parts: IterableIterator<TextPart>): TextPart[] {
-        const snippets: TextPart[] = [];
-        for (
-            let i = 0, next = parts.next();
-            !next.done && i < maxSnippetsCount;
-            i++, next = parts.next()
-        ) {
-            snippets.push(next.value);
-        }
-
-        const lengths = this.getSnippetLengths(
-            snippets.map((snippet) => snippet.substring.length),
-            maxSnippetsLength
-        );
-
-        snippets.forEach((part, index) => {
-            part.substring = this.cropSnippetText(
-                part.substring,
-                lengths[index],
-                index === snippets.length - 1
-                    ? 'left'
-                    : index === 0
-                    ? 'right'
-                    : 'middle'
-            );
-        });
-
-        return snippets;
     }
 
     /**
@@ -149,79 +112,6 @@ export class HighlightService {
                 .join('|')})($|\\b|[\\.,]|\\s)`,
             'gui'
         );
-    }
-
-    private getSnippetLengths(
-        actualLengths: number[],
-        maxTotalLength: number,
-        croppedSnippets = actualLengths.length
-    ): number[] {
-        const targetLengths: number[] = [];
-        let remainingCharacters = maxTotalLength;
-        const maxLength = Math.max(
-            1,
-            Math.floor(maxTotalLength / croppedSnippets)
-        );
-
-        let remainingSnippets = 0;
-
-        let i = 0;
-        for (; i < actualLengths.length && remainingCharacters > 0; i++) {
-            const actualLength = actualLengths[i];
-            const targetLength = Math.min(actualLength, maxLength);
-
-            remainingCharacters -= targetLength;
-            targetLengths[i] = targetLength;
-
-            if (actualLength > targetLength) {
-                // only the cropped snippets could become longer
-                remainingSnippets++;
-            }
-        }
-        for (; i < actualLengths.length; i++) {
-            targetLengths[i] = 0;
-        }
-
-        if (remainingCharacters && remainingSnippets) {
-            // if a snippet is shorter than the maximum snippet length, allow the remaining snippets to become longer
-            const additionalLengths = this.getSnippetLengths(
-                actualLengths.map(
-                    (length, index) => length - targetLengths[index]
-                ),
-                remainingCharacters,
-                remainingSnippets
-            );
-            return targetLengths.map(
-                (length, index) => length + additionalLengths[index]
-            );
-        }
-
-        return targetLengths;
-    }
-
-    private cropSnippetText(
-        text: string,
-        maxLength: number,
-        location: 'left' | 'middle' | 'right'
-    ): string {
-        if (text.length <= maxLength) {
-            return text;
-        }
-
-        switch (location) {
-            case 'left':
-                return text.substr(0, maxLength) + omissionString;
-
-            case 'middle':
-                return (
-                    text.substr(0, maxLength / 2) +
-                    omissionString +
-                    text.substr(text.length - maxLength / 2)
-                );
-
-            case 'right':
-                return omissionString + text.slice(-maxLength);
-        }
     }
 
     /**

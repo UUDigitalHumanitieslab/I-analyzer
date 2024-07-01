@@ -10,9 +10,12 @@ import { AuthServiceMock } from '../mock-data/auth';
 import { CorpusServiceMock } from '../mock-data/corpus';
 import { DialogServiceMock } from '../mock-data/dialog';
 import { ElasticSearchServiceMock } from '../mock-data/elastic-search';
+import { EntityServiceMock } from '../mock-data/entity';
 import { MockCorpusResponse } from '../mock-data/corpus-response';
 import { SearchServiceMock } from '../mock-data/search';
-import { ApiService, AuthService, CorpusService, DialogService, ElasticSearchService, SearchService } from './services';
+import { ApiService, AuthService, CorpusService, DialogService, SearchService } from './services';
+import { ElasticSearchService } from './services/elastic-search.service';
+import { EntityService } from './services/entity.service';
 import { WordmodelsService } from './services/wordmodels.service';
 import { WordmodelsServiceMock } from '../mock-data/wordmodels';
 import { VisualizationService } from './services/visualization.service';
@@ -48,6 +51,10 @@ export const commonTestBed = () => {
         {
             provide: ElasticSearchService,
             useValue: new ElasticSearchServiceMock(),
+        },
+        {
+            provide: EntityService,
+            useValue: new EntityServiceMock(),
         },
         {
             provide: ElementRef,

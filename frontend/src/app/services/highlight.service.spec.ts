@@ -90,43 +90,6 @@ describe('HighlightService', () => {
             [13, 'في']]);
     });
 
-    it('Should limit the length of hits using snippets', () => {
-        const text = generateSequence(0, 10000);
-        const remainingLength = (maxSnippetsLength - 4) * 0.5;
-        const leftLength = Math.ceil(remainingLength);
-        const rightLength = Math.floor(remainingLength);
-        const sequenceSnippetsLength = Math.ceil(leftLength / 5);
-
-        const highlights = highlightService.highlight(text, '5000');
-        const snippets = highlightService.snippets(highlights);
-
-        const result = getHighlightedString(snippets);
-        const expected = getHighlightedString([
-            {
-                substring: omissionString + generateSequence(5000 - sequenceSnippetsLength, 5000).slice(-leftLength + 1) + ' ',
-                isHit: false
-            },
-            {
-                substring: '5000',
-                isHit: true
-            },
-            {
-                substring: ' ' + generateSequence(5001, 5001 + sequenceSnippetsLength).substr(0, rightLength - 1) + omissionString,
-                isHit: false
-            }]);
-
-        expect(result).toEqual(expected);
-    });
-
-    it('Should pass short snippets', () => {
-        const highlights = highlightService.highlight('hello world!', '');
-        const snippets = highlightService.snippets(highlights);
-        expect(snippets).toEqual([{
-            isHit: false,
-            substring: 'hello world!'
-        }]);
-    });
-
     it('Should highlight multiline text', () => {
         expectHighlights(
             // eslint-disable-next-line max-len

@@ -70,6 +70,7 @@ class CorpusConfigurationSerializer(serializers.ModelSerializer):
     languages = serializers.ListField(child=LanguageField())
     category = PrettyChoiceField(choices=CATEGORIES)
     default_sort = NonEmptyJSONField()
+    has_named_entities = serializers.ReadOnlyField()
 
     class Meta:
         model = CorpusConfiguration
@@ -89,6 +90,7 @@ class CorpusConfigurationSerializer(serializers.ModelSerializer):
             'default_sort',
             'language_field',
             'fields',
+            'has_named_entities',
         ]
 
 

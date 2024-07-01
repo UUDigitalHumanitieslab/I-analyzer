@@ -9,8 +9,6 @@ import { ElasticSearchServiceMock } from '../../mock-data/elastic-search';
 import { QueryService } from './query.service';
 import { SearchService } from './search.service';
 import { SessionService } from './session.service';
-import { WordmodelsService } from './wordmodels.service';
-import { WordmodelsServiceMock } from '../../mock-data/wordmodels';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { QueryModel } from '../models';
 import { mockCorpus } from '../../mock-data/corpus';

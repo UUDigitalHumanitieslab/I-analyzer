@@ -4,9 +4,9 @@ import {
 } from '@fortawesome/free-regular-svg-icons';
 import {
     IconDefinition as SolidIconDefinition,
-    faAngleDown, faAngleUp, faArrowLeft, faArrowRight, faAt, faBook, faBookOpen, faChartColumn,
-    faCheck, faChevronDown, faChevronLeft, faChevronRight, faCog, faCogs, faDatabase, faDiagramProject,
-    faDownload, faEdit, faEnvelope, faEye, faFilter, faHistory, faImage, faInfo, faInfoCircle, faLink, faList, faLock,
+    faAngleDown, faAngleUp, faArrowLeft, faArrowRight, faAt, faBook, faBookmark, faBookOpen, faBuilding, faChartColumn,
+    faCheck, faChevronLeft, faChevronRight, faCog, faCogs, faDatabase, faDiagramProject,
+    faDownload, faEnvelope, faEye, faFilter, faHistory, faImage, faInfo, faInfoCircle, faLink, faList, faLocationDot, faLock,
     faMinus, faPalette, faPencil, faPlus, faQuestionCircle, faSearch, faSearchMinus, faSearchPlus, faSignOut,
     faSortAlphaAsc, faSortAlphaDesc, faSortNumericAsc, faSortNumericDesc, faSquare,
     faTable, faTags, faTimes, faTrashCan, faUndo, faUpload, faUser
@@ -109,3 +109,10 @@ export const documentIcons: Icons = {
     scanAlt: faNewspaper,
     context: faBookOpen,
 };
+
+export const entityIcons: Icons = {
+    person: faUser,
+    location: faLocationDot,
+    organization: faBuilding,
+    miscellaneous: faBookmark,
+}

@@ -3,7 +3,7 @@ import { SearchFilter } from '../app/models/field-filter';
 import { Corpus, CorpusField, FoundDocument, QueryModel, SearchResults } from '../app/models/index';
 import { mockCorpus } from './corpus';
 import { TagServiceMock } from './tag';
-import { TagService } from '../app/services/tag.service';
+import { ElasticSearchServiceMock } from './elastic-search';
 import { Aggregator } from '../app/models/aggregation';
 
 export class SearchServiceMock {
@@ -39,7 +39,8 @@ export class SearchServiceMock {
 
     loadResults(queryModel: QueryModel, resultsParams: PageResultsParameters): Promise<SearchResults> {
         const doc = new FoundDocument(
-            new TagServiceMock() as unknown as TagService,
+            new TagServiceMock() as any,
+            new ElasticSearchServiceMock() as any,
             mockCorpus,
             {
                 _id: 'test_1',

@@ -4,7 +4,6 @@ import { Subject } from 'rxjs';
 import { CorpusDefinition } from '../../models/corpus-definition';
 import { ApiService } from '../../services';
 import { ActivatedRoute } from '@angular/router';
-import { filter, take } from 'rxjs/operators';
 import * as _ from 'lodash';
 import { HttpErrorResponse } from '@angular/common/http';
 

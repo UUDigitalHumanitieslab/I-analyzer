@@ -29,6 +29,7 @@ export class Corpus {
         public wordModelsPresent: boolean,
         public languages: string[],
         public category: string,
+        public hasNamedEntities: boolean,
         public documentContext?: DocumentContext,
         public newHighlight?: boolean,
         public defaultSort?: SortState,
