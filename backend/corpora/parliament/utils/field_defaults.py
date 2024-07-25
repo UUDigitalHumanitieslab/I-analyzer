@@ -55,7 +55,7 @@ def committee():
         description = 'Committee that held the debate',
         es_mapping = keyword_mapping(),
         search_filter = MultipleChoiceFilter(
-            description='Search only in debates from the selected chamber(s)',
+            description='Search only in debates from the selected committee(s)',
         ),
         visualizations = ['resultscount', 'termfrequency']
     )

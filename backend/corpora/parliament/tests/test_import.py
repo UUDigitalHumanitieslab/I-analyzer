@@ -609,6 +609,30 @@ I welcome the Minister, Deputy Simon Coveney, and his officials.  I thank them f
             }
         ],
         'n_documents': 25,
+    },
+    {
+        'name': 'parliament-euparl',
+        'start': datetime(1999, 7, 20),
+        'docs': [{
+            'id': '1999-07-20-Speech-2-001',
+            'date': '1999-07-20',
+            'speaker': 'President',
+            'party': None,
+            'speech': "I declare resumed the session of the European Parliament adjourned on 7 May 1999, and I declare open the sitting provided for in Article 10(3) of the Act concerning the election of the representatives to the European Parliament by direct universal suffrage and Rule 10(3) of the Parliament\"s Rules of Procedure.\nBefore the start of the proceedings, Mr Crowley asked to take the floor.",
+            'source_language': None,
+            'url': 'http://purl.org/linkedpolitics/eu/plenary/1999-07-20-Speech-2-001'
+        }] +
+        [{}] * 8 +  # skip ahead to speech with party & language info
+        [{
+            'id': '1999-07-20-Speech-2-010',
+            'date': '1999-07-20',
+            'speaker': 'Wurtz',
+            'party': 'GUE/NGL',
+            'speech': "Mr President, for the first time in ten years, we shall actually be voting for the President of the European Parliament without any of those prior agreements between social-democratic and socialist groups which always seemed to represent, to my mind, a kind of condominium, stifling democratic debate. Today, more by chance than political will on the part of the two principal groups, we have a Left and Right at loggerheads with one another. The Confederal Group of the European United Left...",
+            'source_language': 'FR',
+            'url': 'http://purl.org/linkedpolitics/eu/plenary/1999-07-20-Speech-2-010'
+        }],
+        'n_documents': 10
     }
 ]
 
