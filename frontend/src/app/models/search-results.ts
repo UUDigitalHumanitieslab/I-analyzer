@@ -26,10 +26,13 @@ export interface MostFrequentWordsResult {
 
 
 export interface GeoDocument {
-    id: string;
-    coordinates: {
-        lat: number;
-        lon: number;
+    type: string; // e.g. 'Feature'
+    geometry: {
+        type: string; // e.g. 'Point'
+        coordinates: [number, number]; // [longitude, latitude]
+    };
+    properties: {
+        id: string;
     };
 }
 

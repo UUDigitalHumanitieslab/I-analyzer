@@ -23,7 +23,25 @@ def get_geo_data(request_json):
     es_query = api_query_to_es_query(request_json, corpus_name)
     list_of_documents, _ = es_download.scroll(
         corpus_name, es_query, source_includes=['id', geo_field])
-    return list_of_documents
+
+    # Convert documents to GeoJSON features
+    geojson_features = []
+    for doc in list_of_documents:
+        if doc['_source'][geo_field] is not None:
+            feature = {
+                "type": "Feature",
+                "geometry": {
+                    "type": "Point",
+                    "coordinates": doc['_source'][geo_field]['coordinates']
+                },
+                "properties": {
+                    "id": doc['_source']['id']
+                }
+            }
+            geojson_features.append(feature)
+
+    return geojson_features
+
 
 @shared_task
 def get_ngram_data_bin(**kwargs):
