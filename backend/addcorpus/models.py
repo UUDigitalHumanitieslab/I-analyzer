@@ -268,8 +268,9 @@ class CorpusConfiguration(models.Model):
         try:
             mapping = client.indices.get_mapping(
                 index=self.es_index)
-            fields = mapping[self.es_index].get(
-                'mappings', {}).get('properties', {}).keys()
+            # in production, the index name can be different from the object's es_index value
+            index_name = list(mapping.keys())[0]
+            fields = mapping[index_name].get('mappings', {}).get('properties', {}).keys()
             if any(field.endswith(':ner') for field in fields):
                 return True
         except:
