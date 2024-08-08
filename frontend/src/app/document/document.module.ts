@@ -10,6 +10,7 @@ import { DocumentPopupComponent } from './document-popup/document-popup.componen
 import { DialogModule } from 'primeng/dialog';
 import { DocumentPreviewComponent } from './document-preview/document-preview.component';
 import { EntityLegendComponent } from './entity-legend/entity-legend.component';
+import { EntityToggleComponent } from './entity-toggle/entity-toggle.component';
 import { ElasticsearchHighlightPipe, GeoDataPipe, ParagraphPipe, SnippetPipe } from '../shared/pipes';
 
 @NgModule({
@@ -20,6 +21,7 @@ import { ElasticsearchHighlightPipe, GeoDataPipe, ParagraphPipe, SnippetPipe } f
         DocumentPopupComponent,
         DocumentPreviewComponent,
         EntityLegendComponent,
+        EntityToggleComponent,
         ElasticsearchHighlightPipe,
         GeoDataPipe,
         ParagraphPipe,
@@ -37,6 +39,7 @@ import { ElasticsearchHighlightPipe, GeoDataPipe, ParagraphPipe, SnippetPipe } f
         DocumentPageComponent,
         DocumentPopupComponent,
         EntityLegendComponent,
+        EntityToggleComponent,
         SearchRelevanceComponent,
     ]
 })

@@ -47,7 +47,7 @@
                                     <fa-icon [icon]="entityIcons[textSegment.entity]" [title]="textSegment.entity" class="entity-icon"></fa-icon>
                                 </mark>
                                 <ng-template #unannotatedText>
-                                    {{textSegment.text | paragraph}}
+                                    <span [innerHtml]="textSegment.text | paragraph"></span>
                                 </ng-template>
                             </span>
                         </div>

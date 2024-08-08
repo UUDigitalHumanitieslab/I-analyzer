@@ -20,6 +20,10 @@
             {
                 "id": "citation",
                 "title": "Citing I-analyzer"
+            },
+            {
+                "id": "namedentities",
+                "title": "Viewing named entities"
             }
         ]
     },

@@ -3,7 +3,7 @@
         [responsive]="true" [maximizable]="true" [dismissableMask]="true" [draggable]="true" [resizable]="false" [blockScroll]="true">
         <ng-template pTemplate="header">
             <span>Document {{document.position}} of {{page.total}}</span>
-            <em *ngIf="showNEROption" iaBalloon="Show named entities for this document">Show named entities<ia-toggle (toggled)="toggleNER($event)"></ia-toggle></em>
+            <ia-entity-toggle *ngIf="showNEROption" (toggleNER)="toggleNER($event)"></ia-entity-toggle>
         </ng-template>
 
         <ia-document-view [document]="document" [queryModel]="queryModel" [corpus]="document.corpus" [view]="view" [showEntities]="showNamedEntities"></ia-document-view>

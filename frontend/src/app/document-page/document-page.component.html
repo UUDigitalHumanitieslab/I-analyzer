@@ -2,9 +2,10 @@
 <div class="section">
     <div class="container is-readable">
         <div *ngIf="documentFound; else notFound" [ngClass]="{'is-loading': !document}">
-            <em *ngIf="showNEROption" iaBalloon="Show named entities for this document">Show named entities<ia-toggle (toggled)="toggleNER($event)"></ia-toggle></em>
             <div class="level">
-                <div class="level-left"></div>
+                <div class="level-left">
+                    <ia-entity-toggle *ngIf="showNEROption" (toggleNER)="toggleNER($event)"></ia-entity-toggle>
+                </div>
                 <div class="level-right">
                     <div class="level-item" *ngIf="document?.hasContext">
                         <a [routerLink]="contextLink" [queryParams]="contextQueryParams" iaBalloon="view all documents from this {{contextDisplayName}}">

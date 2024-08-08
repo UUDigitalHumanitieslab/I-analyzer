@@ -1,22 +1,21 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-
 @Pipe({
     name: 'paragraph',
 })
 export class ParagraphPipe implements PipeTransform {
 
     transform(content: string | string[]): unknown {
-        const splitText = this.addParagraphTags(content);
+        const splitText = this.addParagraphBreaks(content);
         return splitText;
     }
 
-    addParagraphTags(content: string | string[]) {
+    addParagraphBreaks(content: string | string[]) {
         const paragraphs = typeof content === 'string' ? content.split('\n') : content;
         if (!paragraphs || paragraphs.length === 1) {
             return content;
         }
-        return paragraphs.map(p => `<p>${p}</p>`).join(' ');
+        return paragraphs.filter(p => p !== '').join('<br><br>');
     }
 
 

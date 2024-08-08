@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, fakeAsync, tick, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
 import { DocumentPopupComponent } from './document-popup.component';
@@ -7,7 +7,6 @@ import { makeDocument } from '../../../mock-data/constructor-helpers';
 import { mockCorpus, mockCorpus2, mockField } from '../../../mock-data/corpus';
 import { DocumentPage } from '../../models/document-page';
 import { QueryModel } from '../../models';
-import { query } from '@angular/animations';
 
 
 describe('DocumentPopupComponent', () => {
@@ -33,7 +32,7 @@ describe('DocumentPopupComponent', () => {
     });
 
     it('does not show the NER toggle for corpora without named entities', () => {
-        expect(fixture.debugElement.query(By.css('ia-toggle'))).toBeFalsy();
+        expect(fixture.debugElement.query(By.css('ia-entity-toggle'))).toBeFalsy();
     });
 
     it('shows the NER toggle for corpora with named entities', () => {
@@ -42,6 +41,6 @@ describe('DocumentPopupComponent', () => {
         component.queryModel = queryModel;
         component.ngOnChanges({queryModel: {previousValue: setModel, currentValue: queryModel, firstChange: false, isFirstChange: null}});
         fixture.detectChanges();
-        expect(fixture.debugElement.query(By.css('ia-toggle'))).toBeTruthy();
+        expect(fixture.debugElement.query(By.css('ia-entity-toggle'))).toBeTruthy();
     });
 });
