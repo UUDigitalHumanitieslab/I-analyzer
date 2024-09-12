@@ -107,6 +107,7 @@ expected_docs = [
             'Cornelis Maertsz. tot Wervers hoof.',
             '\'t Amsterdam Voor Michiel de Groot, Boek-Verkooper op den Nieuwen Dijck, 1671.',
         ]),
+        'notes': None,
         'chapter_title': None,
         'chapter_index': 1,
         'has_content': True,
@@ -199,4 +200,25 @@ def test_dbnl_extraction(dbnl_corpus):
             assert expected[key] == actual[key]
         assert expected.items() <= actual.items()
 
+section_with_footnote = '''
+<div>
+<p>
+<pb n="128"/>geen zekerlijk in de twee bedoelde taalen zeer in elkaâr loopt. Althans in de Constructie geloof ik niet dat de reden kan gezocht worden<note n="a" place="foot">Eenigsints belagchelijk wordt het, wanneer men zich te Stockholm geduurig, tot bewijs der overëenkomst tusschen Zweedsch en Engelsch, de zelfde drie of vier woorden hoort voorzeggen, zonder dat men, om meerdere voorbeelden vraagende, zoo ligtelijk antwoord ontvangt.</note>. Voor 't overige kan ieder Hollander, die er nog een paar der gewoonste Europaesche taalen bij bezit, het Zweedsch, even als het Deensch, zich zelve leeren. In de Poësie evenwel ontbreekt het niet aan eene meenigte woorden, die men vruchteloos uit de Analogie zou willen verklaaren, en die het leezen der Dichters zeer vermoeiëlijken.<note n="b" place="foot">Van een Hoogduitsch - Zweedsch, en Zweedsch - Hoogduitsch Woordenboek van <hi rend="sc">möller</hi> bezit ik nog maar de twee eerste deelen in 40., welke het Hoogduitsch gedeelte bevatten; ik weet niet of het overige reeds gevolgd is, of nog volgen zal. Het is reeds van 1785. Eene kleine <hi rend="i">Grammatica</hi> van <hi rend="sc">abr. Sahlstedt</hi> is in 1796 in 't Hoogduitsch overgezet. Over het Lapsch en Finsch, twee van het Zweedsch geheel onderscheidene taalen, welke ook in dit Koninkrijk gesproken worden, zal het voegsaamer zijn op eene andere plaats te handelen.</note>
+</p>
+</div>
+'''
 
+expected_content = '''geen zekerlijk in de twee bedoelde taalen zeer in elkaâr loopt. Althans in de Constructie geloof ik niet dat de reden kan gezocht worden[1]. Voor 't overige kan ieder Hollander, die er nog een paar der gewoonste Europaesche taalen bij bezit, het Zweedsch, even als het Deensch, zich zelve leeren. In de Poësie evenwel ontbreekt het niet aan eene meenigte woorden, die men vruchteloos uit de Analogie zou willen verklaaren, en die het leezen der Dichters zeer vermoeiëlijken.[2]'''
+
+expected_notes = '''[1] Eenigsints belagchelijk wordt het, wanneer men zich te Stockholm geduurig, tot bewijs der overëenkomst tusschen Zweedsch en Engelsch, de zelfde drie of vier woorden hoort voorzeggen, zonder dat men, om meerdere voorbeelden vraagende, zoo ligtelijk antwoord ontvangt.
+[2] Van een Hoogduitsch - Zweedsch, en Zweedsch - Hoogduitsch Woordenboek van möller bezit ik nog maar de twee eerste deelen in 40., welke het Hoogduitsch gedeelte bevatten; ik weet niet of het overige reeds gevolgd is, of nog volgen zal. Het is reeds van 1785. Eene kleine Grammatica van abr. Sahlstedt is in 1796 in 't Hoogduitsch overgezet. Over het Lapsch en Finsch, twee van het Zweedsch geheel onderscheidene taalen, welke ook in dit Koninkrijk gesproken worden, zal het voegsaamer zijn op eene andere plaats te handelen.'''
+
+def test_footnotes_extraction(dbnl_corpus):
+    corpus = load_corpus_definition(dbnl_corpus)
+    soup = BeautifulSoup(section_with_footnote, 'lxml-xml')
+
+    content = corpus.content.extractor.apply(None, soup)
+    assert content == expected_content
+
+    notes = corpus.notes.extractor.apply(None, soup)
+    assert notes == expected_notes
