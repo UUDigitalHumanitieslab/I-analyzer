@@ -1,13 +1,12 @@
 <ng-container *ngIf="pageResults?.result$ | async as page; else noResult">
     <div class="level">
-        <h2 class="subtitle" *ngIf="page.total <= 5">
-            {page.total, plural, =1 {1 hit} other {{{page.total}} hits}}
-        </h2>
-        <h2 class="subtitle" *ngIf="page.total > 5">
-            {{page.total}} results.
-            Showing results {{pageResults.from$ | async}}
+        <h2 class="subtitle">
+            {page.total, plural, =1 {1 result} other {{{page.total | transitionNumbers}} results}}
+            @if (page.total > 5) {
+            Showing results {{pageResults.from$ | async | transitionNumbers}}
             -
-            {{(pageResults.to$ | async)}}
+            {{(pageResults.to$ | async | transitionNumbers)}}
+            }
         </h2>
         <ia-highlight-selector *ngIf="!pageResults.highlightDisabled" [pageResults]="pageResults"></ia-highlight-selector>
     </div>

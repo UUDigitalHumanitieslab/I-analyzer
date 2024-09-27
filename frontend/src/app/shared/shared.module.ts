@@ -18,6 +18,7 @@ import { TabsComponent } from './tabs/tabs.component';
 import { ToggleComponent } from './toggle/toggle.component';
 import { SlugifyPipe } from './pipes/slugify.pipe';
 import { ToggleButtonDirective } from './toggle-button.directive';
+import { TransitionNumbersPipe } from './pipes/transition-numbers.pipe';
 
 @NgModule({
     declarations: [
@@ -56,6 +57,7 @@ import { ToggleButtonDirective } from './toggle-button.directive';
 
         // Shared pipes
         SlugifyPipe,
+        TransitionNumbersPipe
     ],
     imports: [
         BrowserAnimationsModule,
@@ -71,8 +73,9 @@ import { ToggleButtonDirective } from './toggle-button.directive';
             cookieName: 'csrftoken',
             headerName: 'X-CSRFToken',
         }),
-        RouterModule,
+        TransitionNumbersPipe,
+        RouterModule
     ],
     providers: [SlugifyPipe],
 })
-export class SharedModule {}
+export class SharedModule { }

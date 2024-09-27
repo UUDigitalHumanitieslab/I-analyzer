@@ -22,6 +22,7 @@
           "@utils/*": ["app/utils/*"],
           "@environments/*": ["environments/*"]
       },
-      "useDefineForClassFields": false
+      "useDefineForClassFields": false,
+      "allowSyntheticDefaultImports": true
   }
 }
