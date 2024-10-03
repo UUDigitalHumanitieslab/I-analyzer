@@ -10,33 +10,60 @@
 
         <h1 class="title">New corpus</h1>
 
-        <p class="block">
-            Upload a JSON definition file to add it as a corpus.
-        </p>
+        <ia-tabs>
+            <!-- Create from scratch -->
+            <ng-template iaTabPanel id="newCorpusTab" title="Create from scratch">
+                <form>
+                    <div class="field">
+                        <label class="label" for="title">Title</label>
+                        <div class="control">
+                            <input class="input" type="text" name="title" [(ngModel)]="newCorpusTitle" />
+                        </div>
+                        <p class="help">Enter a short, clear title for your corpus.</p>
+                    </div>
+                    <div class="block">
+                        <button class="button is-primary" type="submit" (click)="submit()">
+                            <span class="icon" aria-hidden="true">
+                                <fa-icon [icon]="formIcons.confirm"></fa-icon>
+                            </span>
+                            <span>
+                                Save corpus
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </ng-template>
 
-        <form>
-            <div class="block">
-                <ia-definition-json-upload
-                    [reset]="reset$" (upload)="onJSONUpload($event)">
-                </ia-definition-json-upload>
-            </div>
+            <!-- Upload JSON -->
+            <ng-template iaTabPanel id="uploadJSONTab" title="Upload a JSON definition">
+                <p class="block">
+                    Upload a JSON definition file to add it as a corpus.
+                </p>
+                <form>
+                    <div class="block">
+                        <ia-definition-json-upload [reset]="reset$" (upload)="onJSONUpload($event)">
+                        </ia-definition-json-upload>
+                        </div>
 
-            <div class="block" *ngIf="corpus.isComplete()">
-                <button class="button is-primary" type="submit" (click)="submit()">
-                    <span class="icon" aria-hidden="true">
-                        <fa-icon [icon]="formIcons.confirm"></fa-icon>
-                    </span>
-                    <span>
-                        Save corpus
-                    </span>
-                </button>
-            </div>
+                    <div class="block" *ngIf="corpus.isComplete()">
+                        <button class="button is-primary" type="submit" (click)="saveCorpus(true)">
+                            <span class="icon" aria-hidden="true">
+                                <fa-icon [icon]="formIcons.confirm"></fa-icon>
+                            </span>
+                            <span>
+                                Save corpus
+                            </span>
+                        </button>
+                        </div>
 
-            <div class="message is-danger" *ngIf="error">
-                <div class="message-body">
-                    Could not save corpus: {{error.message}}
-                </div>
-            </div>
-        </form>
+                    <div class="message is-danger" *ngIf="error">
+                        <div class="message-body">
+                            Could not save corpus: {{error.message}}
+                        </div>
+                    </div>
+                    </form>
+            </ng-template>
+            </ia-tabs>
+
     </div>
 </section>

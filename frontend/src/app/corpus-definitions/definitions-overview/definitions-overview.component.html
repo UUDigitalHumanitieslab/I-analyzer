@@ -38,10 +38,16 @@
                                 </span>
                             </a>
                             &nbsp;
-                            <a class="button"
-                                [routerLink]="['edit', corpus.id]">
+                            <a class="button" [routerLink]="['edit', corpus.id]">
                                 <span class="icon" aria-label="edit">
                                     <fa-icon [icon]="actionIcons.edit"></fa-icon>
+                                </span>
+                            </a>
+                            &nbsp;
+                            <a class="button"
+                                [routerLink]="['io', corpus.id]">
+                                <span class="icon" aria-label="import-export">
+                                    <fa-icon [icon]="actionIcons.inOut"></fa-icon>
                                 </span>
                             </a>
                             &nbsp;

@@ -8,11 +8,11 @@ import * as _ from 'lodash';
 import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
-    selector: 'ia-edit-definition',
-    templateUrl: './edit-definition.component.html',
-    styleUrls: ['./edit-definition.component.scss'],
+    selector: 'ia-definition-in-out',
+    templateUrl: './definition-in-out.component.html',
+    styleUrls: ['./definition-in-out.component.scss'],
 })
-export class EditDefinitionComponent {
+export class DefinitionInOutComponent {
     actionIcons = actionIcons;
     formIcons = formIcons;
 
@@ -22,11 +22,7 @@ export class EditDefinitionComponent {
 
     error: Error;
 
-    constructor(
-        private apiService: ApiService,
-        private route: ActivatedRoute,
-
-    ) {
+    constructor(private apiService: ApiService, private route: ActivatedRoute) {
         const id = parseInt(this.route.snapshot.params['corpusID'], 10);
         this.corpus = new CorpusDefinition(this.apiService, id);
     }
@@ -34,7 +30,10 @@ export class EditDefinitionComponent {
     downloadJSON() {
         const data = this.corpus.toDefinition();
         const content = JSON.stringify(data, undefined, 4);
-        const blob = new Blob([content], { type: `application/json;charset=utf-8`, endings: 'native' });
+        const blob = new Blob([content], {
+            type: `application/json;charset=utf-8`,
+            endings: 'native',
+        });
         const filename = data.name + '.json';
         saveAs(blob, filename);
     }
@@ -46,7 +45,7 @@ export class EditDefinitionComponent {
     submit() {
         this.corpus.save().subscribe(
             () => this.reset(),
-            (err: HttpErrorResponse) => this.error = err,
+            (err: HttpErrorResponse) => (this.error = err)
         );
     }
 

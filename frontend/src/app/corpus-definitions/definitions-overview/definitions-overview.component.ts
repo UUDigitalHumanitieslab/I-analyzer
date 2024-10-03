@@ -1,17 +1,17 @@
 import { Component } from '@angular/core';
-import { actionIcons } from '@shared/icons';
-import { ApiService } from '@services';
-import { Observable } from 'rxjs';
 import { APIEditableCorpus } from '@models/corpus-definition';
-import * as _ from 'lodash';
+import { ApiService } from '@services';
+import { actionIcons, documentIcons } from '@shared/icons';
+import { Observable } from 'rxjs';
 
 @Component({
     selector: 'ia-definitions-overview',
     templateUrl: './definitions-overview.component.html',
-    styleUrls: ['./definitions-overview.component.scss']
+    styleUrls: ['./definitions-overview.component.scss'],
 })
 export class DefinitionsOverviewComponent {
     actionIcons = actionIcons;
+    documentIcons = documentIcons;
 
     corpora$: Observable<APIEditableCorpus[]>;
 
@@ -20,8 +20,7 @@ export class DefinitionsOverviewComponent {
     }
 
     delete(corpus: APIEditableCorpus) {
-        this.apiService.deleteCorpus(corpus.id).subscribe(response => {
-            console.log(response);
+        this.apiService.deleteCorpus(corpus.id).subscribe(() => {
             this.corpora$ = this.apiService.corpusDefinitions();
         });
     }

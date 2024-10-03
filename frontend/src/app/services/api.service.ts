@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/member-ordering */
 import { Injectable } from '@angular/core';
 
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { interval, Observable } from 'rxjs';
 import { filter, switchMap, take, takeUntil } from 'rxjs/operators';
 import { ImageInfo } from '../image-view/image-view.component';
@@ -29,12 +29,13 @@ import {
     UserResponse,
     UserRole,
     WordcloudParameters,
-} from '@models/index';
+} from '@models';
 import { environment } from '@environments/environment';
 import * as _ from 'lodash';
 import {
-    APICorpusDefinition,
     APIEditableCorpus,
+    CorpusDataFile,
+    DataFileInfo,
 } from '@models/corpus-definition';
 
 interface SolisLoginResponse {
@@ -142,7 +143,9 @@ export class ApiService {
     }
 
     // Visualization
-    public wordCloud(data: WordcloudParameters): Observable<MostFrequentWordsResult[]> {
+    public wordCloud(
+        data: WordcloudParameters
+    ): Observable<MostFrequentWordsResult[]> {
         const url = this.apiRoute(this.visApiURL, 'wordcloud');
         return this.http.post<MostFrequentWordsResult[]>(url, data);
     }
@@ -232,14 +235,24 @@ export class ApiService {
     }
 
     // Corpus
-    public corpusDocumentationPages(corpus?: Corpus): Observable<CorpusDocumentationPage[]> {
-        const params = new URLSearchParams({corpus: corpus.name}).toString();
-        const url = this.apiRoute(this.corpusApiUrl, `documentation/?${params}`);
+    public corpusDocumentationPages(
+        corpus?: Corpus
+    ): Observable<CorpusDocumentationPage[]> {
+        const params = new URLSearchParams({ corpus: corpus.name }).toString();
+        const url = this.apiRoute(
+            this.corpusApiUrl,
+            `documentation/?${params}`
+        );
         return this.http.get<CorpusDocumentationPage[]>(url.toString());
     }
 
-    public corpusDocumentationPage(pageID: number): Observable<CorpusDocumentationPage> {
-        const url = this.apiRoute(this.corpusApiUrl, `documentation/${pageID}/`);
+    public corpusDocumentationPage(
+        pageID: number
+    ): Observable<CorpusDocumentationPage> {
+        const url = this.apiRoute(
+            this.corpusApiUrl,
+            `documentation/${pageID}/`
+        );
         return this.http.get<CorpusDocumentationPage>(url);
     }
 
@@ -254,19 +267,70 @@ export class ApiService {
     }
 
     public corpusDefinition(corpusID: number): Observable<APIEditableCorpus> {
-        return this.http.get<APIEditableCorpus>(`/api/corpus/definitions/${corpusID}/`);
+        return this.http.get<APIEditableCorpus>(
+            `/api/corpus/definitions/${corpusID}/`
+        );
     }
 
-    public createCorpus(data: APIEditableCorpus): Observable<APIEditableCorpus> {
-        return this.http.post<APIEditableCorpus>('/api/corpus/definitions/', data);
+    public createCorpus(
+        data: APIEditableCorpus
+    ): Observable<APIEditableCorpus> {
+        return this.http.post<APIEditableCorpus>(
+            '/api/corpus/definitions/',
+            data
+        );
     }
 
-    public updateCorpus(corpusID: number, data: APIEditableCorpus): Observable<APIEditableCorpus> {
-        return this.http.put<APIEditableCorpus>(`/api/corpus/definitions/${corpusID}/`, data);
+    public updateCorpus(
+        corpusID: number,
+        data: APIEditableCorpus
+    ): Observable<APIEditableCorpus> {
+        return this.http.put<APIEditableCorpus>(
+            `/api/corpus/definitions/${corpusID}/`,
+            data
+        );
     }
 
     public deleteCorpus(corpusID: number): Observable<any> {
         return this.http.delete(`/api/corpus/definitions/${corpusID}/`);
+    }
+
+    // Corpus datafiles
+    public createDataFile(
+        corpusId: number,
+        file: File
+    ): Observable<CorpusDataFile> {
+        const formData: FormData = new FormData();
+        formData.append('file', file, 'newFile.csv');
+        formData.append('corpus', String(corpusId));
+        formData.append('is_sample', 'True');
+        return this.http.post<CorpusDataFile>(
+            `/api/corpus/datafiles/`,
+            formData
+        );
+    }
+
+    public deleteDataFile(dataFile: CorpusDataFile): Observable<null> {
+        const url = `/api/corpus/datafiles/${dataFile.id}/`;
+        return this.http.delete<null>(url);
+    }
+
+    public listDataFiles(
+        corpusId: number,
+        samples: boolean = false
+    ): Observable<CorpusDataFile[]> {
+        const params = new HttpParams()
+            .set('corpus', corpusId)
+            .set('samples', samples);
+        return this.http.get<CorpusDataFile[]>('/api/corpus/datafiles/', {
+            params: params,
+        });
+    }
+
+    public getDataFileInfo(dataFile: CorpusDataFile): Observable<DataFileInfo> {
+        return this.http.get<DataFileInfo>(
+            `/api/corpus/datafiles/${dataFile.id}/info/`
+        );
     }
 
     // Tagging

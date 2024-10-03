@@ -4,7 +4,8 @@
             <ul>
                 <li><a [routerLink]="['/']">Corpora</a></li>
                 <li><a [routerLink]="['../..']">Definitions</a></li>
-                <li class="is-active" aria-current="page"><a>{{corpus.definition?.meta.title || '...'}}</a></li>
+                <li class="is-active" aria-current="page"><a>{{corpus.definition?.meta.title ||
+                        '...'}}: import/export</a></li>
             </ul>
         </nav>
 
@@ -29,14 +30,13 @@
 
         <form>
             <div class="block">
-                <ia-definition-json-upload
-                    [reset]="reset$" (upload)="onJSONUpload($event)">
+                <ia-definition-json-upload [reset]="reset$" (upload)="onJSONUpload($event)">
                 </ia-definition-json-upload>
             </div>
 
             <div class="block">
-                <button class="button is-primary" [class.is-loading]="corpus.loading$ | async"
-                    type="submit" (click)="submit()">
+                <button class="button is-primary" [class.is-loading]="corpus.loading$ | async" type="submit"
+                    (click)="submit()">
                     <span class="icon" aria-hidden="true">
                         <fa-icon [icon]="formIcons.confirm"></fa-icon>
                     </span>

@@ -1,0 +1,46 @@
+<h1 class="title">Corpus Metadata</h1>
+<h2 class="subtitle">Provide some basic information about your corpus</h2>
+<form (ngSubmit)="onSubmit()" [formGroup]="metaForm">
+
+        <div class="field">
+            <label class="label" for="title">Title</label>
+            <div class="control">
+                <input class="input" type="text" name="title" formControlName="title" />
+            </div>
+            <p class="help">Enter a short, clear title for your corpus.</p>
+        </div>
+
+        <div class="field">
+            <label class="label" for="description">Description</label>
+            <div class="control">
+                <input class="input" type="text" name="description" formControlName="description" />
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label" for="category">Category</label>
+            <div class="control">
+            <p-dropdown [options]="categories" formControlName="category" placeholder="select category" />
+            </div>
+        </div>
+
+        <div class="field is-grouped">
+            <div formGroupName="date_range">
+                <label class="label" for="min">Start date</label>
+                <div class="control">
+                    <input class="input" type="date" name="min" formControlName="min" />
+                </div>
+                <label class="label" for="max">End date</label>
+                <div class="control">
+                    <input class="input" type="date" name="max" formControlName="max" />
+                </div>
+                <p class="help">Enter the earliest and latest date in your corpus in YYYY-MM-DD format</p>
+            </div>
+        </div>
+
+    <div class="field">
+        <p class="control">
+            <button class="button is-primary">Next</button>
+        </p>
+    </div>
+</form>

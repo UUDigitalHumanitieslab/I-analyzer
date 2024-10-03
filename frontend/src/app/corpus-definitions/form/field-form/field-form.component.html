@@ -1,0 +1,74 @@
+<h1 class="title">Fields</h1>
+<form class="container is-readable" [formGroup]="fieldsForm" (ngSubmit)="onSubmit()">
+    <ng-container formArrayName="fields">
+        <div class="box" *ngFor="let field of fields.controls; let i=index" [formGroupName]="i">
+            <div class="field">
+                <label class="label" for="display_name">Display name</label>
+                <div class="control">
+                    <input class="input" type="text" name="display_name" formControlName="display_name" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label" for="description">Description</label>
+                <div class="control">
+                    <input class="input" type="text" name="description" formControlName="description" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label" for="type">Type</label>
+                <div class="control">
+                    <p-dropdown [options]="fieldTypeOptions" formControlName="type" optionLabel="label" optionValue="value"
+                        placeholder="select type" />
+                    </div>
+                    <p *ngIf="getFieldProperty(field, 'helpText') as help" class="help">{{help}}</p>
+                    </div>
+
+            <div class="field">
+                <label class="label" for="options">Options</label>
+                <ng-container formGroupName="options">
+                    <div class="control">
+                        <label class="checkbox">
+                            <input type="checkbox" name="search" formControlName="search" /> Search
+                            <p class="help">Enable full-text search for this field.</p>
+                            </label>
+                            </div>
+                            <div class="control">
+                                <label class="checkbox">
+                            <input type="checkbox" name="filter" formControlName="filter" /> Filter
+                            <p class="help">Enable filtering on values in this field.</p>
+                            </label>
+                            </div>
+                            <div class="control">
+                                <label class="checkbox">
+                            <input type="checkbox" name="preview" formControlName="preview" /> Preview
+                            <p class="help">Show this field in the results overview.</p>
+                            </label>
+                            </div>
+                            <div class="control">
+                                <label class="checkbox">
+                            <input type="checkbox" name="sort" formControlName="sort" /> Sort
+                            <p class="help">Enable sorting on values of this field.</p>
+                            </label>
+                            </div>
+                            </ng-container>
+                            </div>
+                            <div *ngIf="getFieldProperty(field, 'hasLanguage')" class="field">
+                                <div class="control">
+                                <p-dropdown [options]="languageOptions" formControlName="language" optionLabel="name" optionValue="code"
+                                    placeholder="select language (optional)" [filter]="true" />
+                                </div>
+                            </div>
+
+        </div>
+    </ng-container>
+
+
+
+    <div class="field">
+        <p class="control">
+            <button class="button is-primary">Save changes</button>
+        </p>
+    </div>
+</form>

@@ -1,5 +1,5 @@
 from django.contrib import admin, messages
-from .models import Corpus, CorpusConfiguration, Field, CorpusDocumentationPage
+from .models import Corpus, CorpusConfiguration, CorpusDataFile, Field, CorpusDocumentationPage
 
 def show_warning_message(request):
     '''
@@ -14,17 +14,25 @@ def show_warning_message(request):
     )
 
 
+class InlineDatafileAdmin(admin.StackedInline):
+    model = CorpusDataFile
+    fields = ['file', 'is_sample']
+    show_change_link = True,
+    extra = 0
+
 class CorpusAdmin(admin.ModelAdmin):
     readonly_fields = ['configuration', 'ready_to_index', 'ready_to_publish']
     fields = ['name', 'groups', 'configuration', 'has_python_definition', 'ready_to_index', 'ready_to_publish', 'active']
     list_display = ['name', 'active']
     list_filter = ['groups', 'active']
+    inlines = [InlineDatafileAdmin]
 
 class InlineFieldAdmin(admin.StackedInline):
     model = Field
     fields = ['display_name', 'description']
     show_change_link = True
     extra = 0
+
 
 class CorpusConfigurationAdmin(admin.ModelAdmin):
     readonly_fields = ['corpus']

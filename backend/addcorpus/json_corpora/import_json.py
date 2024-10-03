@@ -1,14 +1,13 @@
 from typing import List, Dict, Iterable, Optional
-from datetime import datetime
+from datetime import date, datetime
 
 
-from addcorpus.models import Corpus, CorpusConfiguration, Field
+from addcorpus.models import Field
 from addcorpus.json_corpora.utils import get_path
 from addcorpus import es_mappings
 from addcorpus.constants import VisualizationType
-from addcorpus.validation.publishing import _any_date_fields
 from django.conf import settings
-from addcorpus.json_corpora.constants import DEFAULT_CSV_DELIMITER, DATE_FORMAT
+from addcorpus.json_corpora.constants import DEFAULT_CSV_DELIMITER, DATE_FORMAT, DEFAULT_MAX_DATE, DEFAULT_MIN_DATE
 
 def import_json_corpus(data: Dict) -> Dict:
     name = get_path(data, 'name')
@@ -33,9 +32,9 @@ def _parse_configuration(data: Dict) -> Dict:
         'es_index': create_index_name(get_path(data, 'name')),
         'languages': get_path(data, 'meta', 'languages'),
         'min_date': _parse_date(
-            get_path(data, 'meta', 'date_range', 'min')),
+            get_path(data, 'meta', 'date_range', 'min'), DEFAULT_MIN_DATE),
         'max_date': _parse_date(
-            get_path(data, 'meta', 'date_range', 'max')),
+            get_path(data, 'meta', 'date_range', 'max'), DEFAULT_MAX_DATE),
         'default_sort': get_path(
             data, 'options', 'default_sort') or {},
         'language_field': get_path(
@@ -48,7 +47,9 @@ def _parse_configuration(data: Dict) -> Dict:
     }
 
 
-def _parse_date(date: str):
+def _parse_date(date: Optional[str], fallback: Optional[date]):
+    if not date:
+        return fallback
     return datetime.strptime(date, DATE_FORMAT).date()
 
 

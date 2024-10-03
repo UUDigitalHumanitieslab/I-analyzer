@@ -1,0 +1,11 @@
+character,line,date-column,FLOAT COLUMN,int_column,bool column
+"HAMLET","Whither wilt thou lead me? Speak, I'll go no further.","1256-10-08","7.03","13","True"
+"GHOST","Mark me.","1435-10-07","4.74","89","True"
+"HAMLET","I will.","1463-07-16","5.55","29","True"
+"GHOST","My hour is almost come,","1634-08-09","3.04","100","True"
+"GHOST","When I to sulph'rous and tormenting flames","1982-09-01","6.73","34","True"
+"GHOST","Must render up myself.","1756-11-22","-0.58","-12","False"
+"HAMLET","Alas, poor ghost!","1200-09-05","9.38","6","False"
+"GHOST","Pity me not, but lend thy serious hearing","1633-11-18","8.84","83","False"
+"GHOST","To what I shall unfold.","1445-11-09","3.6","97","False"
+"HAMLET","Speak, I am bound to hear.","1984-08-12","-1.89","-4","False"

@@ -1,16 +1,36 @@
 import * as _ from 'lodash';
 import { ApiService } from '@services';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { share } from 'rxjs/operators';
+import { filter, share } from 'rxjs/operators';
 
-export interface APICorpusField {
+export interface CorpusDataFile {
+    id?: number;
+    corpusID: number;
+    file: File | string;
+    is_sample: boolean;
+    created?: Date;
+}
+
+export interface DataFileInfo {
+    [columnName: string]: APICorpusDefinitionField['type'];
+}
+
+export interface APICorpusDefinitionField {
     name: string;
     display_name: string;
     description: string;
-    type: 'text_content'|'text_metadata'|'url'|'integer'|'float'|'date'|'boolean'|'geo_point';
+    type:
+        | 'text_content'
+        | 'text_metadata'
+        | 'url'
+        | 'integer'
+        | 'float'
+        | 'date'
+        | 'boolean'
+        | 'geo_point';
     options: {
         search: boolean;
-        filter: 'show'|'hide'|'none';
+        filter: 'show' | 'hide' | 'none';
         preview: boolean;
         visualize: boolean;
         sort: boolean;
@@ -26,10 +46,10 @@ export interface APICorpusDefinition {
     name: string;
     meta: {
         title: string;
-        category: string;
-        description: string;
-        languages: string[];
-        date_range: {
+        category?: string;
+        description?: string;
+        languages?: string[];
+        date_range?: {
             min: string;
             max: string;
         };
@@ -37,10 +57,10 @@ export interface APICorpusDefinition {
     source_data: {
         type: 'csv';
         options?: {
-            delimiter?: ','|';'|'\t';
+            delimiter?: ',' | ';' | '\t';
         };
     };
-    fields: APICorpusField[];
+    fields: APICorpusDefinitionField[];
     options?: {
         language_field?: string;
         document_context?: {
@@ -56,13 +76,13 @@ export interface APICorpusDefinition {
             ascending: boolean;
         };
     };
-};
+}
 
 export interface APIEditableCorpus {
     id?: number;
     active: boolean;
     definition: APICorpusDefinition;
-};
+}
 
 export class CorpusDefinition {
     active = false;
@@ -70,12 +90,13 @@ export class CorpusDefinition {
 
     definition: APICorpusDefinition;
 
+    definitionUpdated$ = this.loading$.pipe(filter((val) => !val));
 
     constructor(private apiService: ApiService, public id?: number) {
         if (this.id) {
-            this.apiService.corpusDefinition(this.id).subscribe(result =>
-                this.setFromAPIData(result)
-            );
+            this.apiService
+                .corpusDefinition(this.id)
+                .subscribe((result) => this.setFromAPIData(result));
         } else {
             this.loading$.next(false);
         }
@@ -100,11 +121,11 @@ export class CorpusDefinition {
     save(): Observable<APIEditableCorpus> {
         this.loading$.next(true);
         const data = this.toAPIData();
-        const request$ = this.id ?
-            this.apiService.updateCorpus(this.id, data) :
-            this.apiService.createCorpus(data);
+        const request$ = this.id
+            ? this.apiService.updateCorpus(this.id, data)
+            : this.apiService.createCorpus(data);
         const result$ = request$.pipe(share());
-        result$.subscribe(result => this.setFromAPIData(result));
+        result$.subscribe((result) => this.setFromAPIData(result));
         return result$;
     }
 
@@ -112,7 +133,7 @@ export class CorpusDefinition {
         return {
             id: this.id,
             active: this.active,
-            definition: this.toDefinition()
+            definition: this.toDefinition(),
         };
     }
 

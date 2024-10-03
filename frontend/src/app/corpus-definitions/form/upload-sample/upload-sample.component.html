@@ -1,0 +1,80 @@
+<h1 class="title">Upload a sample of your data</h1>
+<h2 class="subtitle">Determines sensible default values for the fields of your corpus</h2>
+
+<div *ngIf="fileInfo$|async as fileInfo" class="block">
+    Found the following columns in your sample file:
+    <ul>
+        <li *ngFor="let field of fileInfo|keyvalue">
+            <strong>{{field.key}}</strong> {{field.value}}
+        </li>
+    </ul>
+</div>
+
+<ng-template #resetMenu>
+    <div class="field is-grouped">
+        <button class="button is-danger" (click)="resetFields()">
+            <span class="icon" aria-hidden="true">
+                <fa-icon [icon]="formIcons.reset"></fa-icon>
+            </span>
+            <span>Reset</span>
+        </button>
+        <button class="button is-primary" (click)="onSubmit()">
+            <span class="icon" aria-hidden="true">
+                <fa-icon [icon]="actionIcons.next"></fa-icon>
+            </span>
+            <span>Next</span>
+        </button>
+    </div>
+</ng-template>
+
+
+<form *ngIf="(fileInfo$ | async) === undefined || (fileInfo$ | async) === null; else resetMenu">
+    <div class="field">
+        <label class="label">Delimiter</label>
+        <div class="control">
+            <div class="select">
+                <select (change)="onDelimiterChange($event)">
+                    <option *ngFor="let option of delimiterOptions" [value]="option.value"
+                        [selected]="option.value===((corpusDefService.corpus$|async).definition.source_data.options?.delimiter || ',')">
+                        {{option.label}}</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="field">
+        <div class="file has-name">
+    <label class="file-label">
+        <input class="file-input" type="file" name="definition-upload"
+            accept=".csv,.tsv,text/csv,text/tab-separated-values " (input)="onUpload($event)" />
+        <span class="file-cta">
+            <span class="file-icon" aria-hidden="true">
+                <fa-icon [icon]="actionIcons.upload"></fa-icon>
+            </span>
+            <span class="file-label">Upload CSV file...</span>
+        </span>
+        <span class="file-name" *ngIf="file$ | async as file">
+            {{file.name}}
+        </span>
+    </label>
+</div>
+</div>
+
+<div *ngIf="fileInfo$|async" class="field">
+    <p class="control">
+        <button class="button is-primary">Next</button>
+    </p>
+</div>
+
+<div class="message is-danger" *ngIf="error$ | async as error">
+    <div class="message-header">
+        Invalid file
+    </div>
+    <div class="message-body">
+        An error occurred when reading the file: {{error.message}}
+    </div>
+</div>
+
+
+</form>
+
