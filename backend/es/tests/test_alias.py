@@ -28,3 +28,7 @@ def test_highest_version_number(es_alias_client):
     current_index = 'times-test'
     num = get_highest_version_number(indices, current_index)
     assert num == 2
+    current_index = "fantasy-index-name"
+    indices = es_alias_client.indices.get(index="{}-*".format(current_index))
+    num = get_highest_version_number(indices, current_index)
+    assert num == 0

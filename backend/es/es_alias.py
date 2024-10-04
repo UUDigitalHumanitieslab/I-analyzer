@@ -105,6 +105,7 @@ def get_highest_version_number(indices, current_index=None):
     if type(indices) is list:
         raise RuntimeError('`indices` should not be list')
     versions = [extract_version(index_name, current_index) for index_name in indices.keys()]
-    if len(versions):
+    try:
         return max([v for v in versions if v is not None])
-    return 0
+    except:
+        return 0
