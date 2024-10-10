@@ -4,7 +4,10 @@ from addcorpus.es_settings import add_language_string, stopwords_available, stem
 def primary_mapping_type(es_mapping: Dict) -> str:
     return es_mapping.get('type', None)
 
-def main_content_mapping(token_counts=True, stopword_analysis=False, stemming_analysis=False, language=None, updated_highlighting=True):
+
+def main_content_mapping(
+    token_counts=True, stopword_analysis=False, stemming_analysis=False, language=None
+):
     '''
     Mapping for the main content field. Options:
 
@@ -14,14 +17,7 @@ def main_content_mapping(token_counts=True, stopword_analysis=False, stemming_an
     - `updated_highlighting`: enables the new highlighter, which only works for fields that are indexed with the term vector set to 'with_positions_offsets'.
     '''
 
-    mapping = {
-        'type': 'text'
-    }
-
-    if updated_highlighting:
-        mapping.update({
-        'term_vector': 'with_positions_offsets' # include char positions on _source (in addition to the multifields) for highlighting
-    })
+    mapping = {"type": "text", "term_vector": "with_positions_offsets"}
 
     if any([token_counts, stopword_analysis, stemming_analysis]):
         multifields = {}

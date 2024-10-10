@@ -289,7 +289,6 @@ def speech(language=None):
             stopword_analysis=has_language,
             stemming_analysis=has_language,
             language=language,
-            updated_highlighting=True
         ),
         results_overview=True,
         search_field_core=True,
