@@ -24,34 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    - name: Build and push Elasticsearch image
-      uses: docker/build-push-action@v6
-      with:
-        context: .
-        file: DockerfileElastic
-        push: true
-        tags: ghcr.io/uudigitalhumanitieslab/ianalyzer-elastic:latest
-        cache-from: type=registry,ref=ghcr.io/uudigitalhumanitieslab/ianalyzer-elastic:latest
-        cache-to: type=inline
-    - name: Build and push Backend
-      uses: docker/build-push-action@v6
-      with:
-        context: backend/.
-        push: true
-        tags: ghcr.io/uudigitalhumanitieslab/ianalyzer-backend:latest
-        cache-from: type=registry,ref=ghcr.io/uudigitalhumanitieslab/ianalyzer-backend:latest
-        cache-to: type=inline
     - name: Run backend tests
       run: |
         sudo mkdir -p /ci-data
         docker compose pull elasticsearch
-        docker compose pull backend
         docker compose --env-file .env-ci run --rm backend pytest
